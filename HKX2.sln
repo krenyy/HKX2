@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HKX2", "HKX2\HKX2.csproj", "{2A7AB7E3-73AD-4C68-973B-9CD646D070E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{B41DA888-90ED-483D-9682-20C95C7770FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadWrite", "ReadWrite\ReadWrite.csproj", "{11C026FC-1EEC-4A7D-85B0-C658BDE5E32E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A7AB7E3-73AD-4C68-973B-9CD646D070E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A7AB7E3-73AD-4C68-973B-9CD646D070E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A7AB7E3-73AD-4C68-973B-9CD646D070E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A7AB7E3-73AD-4C68-973B-9CD646D070E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B41DA888-90ED-483D-9682-20C95C7770FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B41DA888-90ED-483D-9682-20C95C7770FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B41DA888-90ED-483D-9682-20C95C7770FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B41DA888-90ED-483D-9682-20C95C7770FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11C026FC-1EEC-4A7D-85B0-C658BDE5E32E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11C026FC-1EEC-4A7D-85B0-C658BDE5E32E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11C026FC-1EEC-4A7D-85B0-C658BDE5E32E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11C026FC-1EEC-4A7D-85B0-C658BDE5E32E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
