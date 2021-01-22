@@ -1,10 +1,10 @@
-﻿/*
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace HKX2.Builders
 {
-    public class hkaiNavMeshBuilder
+    public static class hkaiNavMeshBuilder
     {
         public struct BuildParams
         {
@@ -30,7 +30,7 @@ namespace HKX2.Builders
             }
         }
 
-        public hkRootLevelContainer BuildNavmesh(BuildParams p, List<Vector3> verts, List<int> indices)
+        public static hkRootLevelContainer BuildNavmesh(BuildParams p, List<Vector3> verts, List<int> indices)
         {
             var root = new hkRootLevelContainer();
             NavMeshNative.SetNavmeshBuildParams(p.Cellsize, p.Cellheight, p.SlopeAngle, p.AgentHeight, p.AgentClimb, p.AgentRadius, p.MinRegionArea);
@@ -111,7 +111,7 @@ namespace HKX2.Builders
                     else
                     {
                         e.m_oppositeFace = bindices[t * 2 + 3 + i];
-                        // Find the edge that has this face as an adjancency
+                        // Find the edge that has this face as an adjacency
                         for (int j = 0; j < 3; j++)
                         {
                             var edge = bindices[t * 2 + 3 + i] * 6 + 3 + j;
@@ -139,7 +139,7 @@ namespace HKX2.Builders
                 shortIndices[i + 1] = bindices[i * 2 + 1];
                 shortIndices[i + 2] = bindices[i * 2 + 2];
             }
-            bool didbuild = BVHNative.BuildBVHForMesh(vbverts, vbverts.Length, shortIndices, shortIndices.Length);
+            bool didbuild = BVHNative.BuildBVHForMesh(vbverts, vbverts.Length, shortIndices.Select(arg => (uint) arg).ToArray(), shortIndices.Length);
             if (!didbuild)
             {
                 return null;
@@ -157,7 +157,6 @@ namespace HKX2.Builders
                 var bnode = new BVNode();
                 bnode.Min = new Vector3(n.minX, n.minY, n.minZ);
                 bnode.Max = new Vector3(n.maxX, n.maxY, n.maxZ);
-                // bnode.IsLeaf = n.isLeaf == 1;
                 bnode.IsLeaf = n.isLeaf;
                 bnode.PrimitiveCount = n.primitiveCount;
                 bnode.Primitive = n.firstChildOrPrimitive;
@@ -165,7 +164,6 @@ namespace HKX2.Builders
             }
             for (int i = 0; i < nodes.Length; i++)
             {
-                // if (nodes[i].isLeaf == 0)
                 if (!nodes[i].isLeaf)
                 {
                     bnodes[i].Left = bnodes[(int)nodes[i].firstChildOrPrimitive];
@@ -216,4 +214,3 @@ namespace HKX2.Builders
         }
     }
 }
-*/

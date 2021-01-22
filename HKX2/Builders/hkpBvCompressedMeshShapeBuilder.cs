@@ -107,7 +107,6 @@ namespace HKX2.Builders
                 var bnode = new BVNode();
                 bnode.Min = new Vector3(n.minX, n.minY, n.minZ);
                 bnode.Max = new Vector3(n.maxX, n.maxY, n.maxZ);
-                // bnode.IsLeaf = n.isLeaf == 1;
                 bnode.IsLeaf = n.isLeaf;
                 bnode.PrimitiveCount = n.primitiveCount;
                 bnode.Primitive = n.firstChildOrPrimitive;
@@ -115,7 +114,6 @@ namespace HKX2.Builders
             }
             for (int i = 0; i < nodes.Length; i++)
             {
-                // if (nodes[i].isLeaf == 0)
                 if (!nodes[i].isLeaf)
                 {
                     bnodes[i].Left = bnodes[(int) nodes[i].firstChildOrPrimitive];
@@ -146,7 +144,7 @@ namespace HKX2.Builders
                     node.Left = null;
                     node.Right = null;
                     node.IsLeaf = true;
-                    node.Primitive = (uint)sectionBVHs.Count();
+                    node.Primitive = (uint) sectionBVHs.Count;
                     sectionBVHs.Add(secnode);
                 }
             }
@@ -170,7 +168,7 @@ namespace HKX2.Builders
                 }
             }
             var shared = new HashSet<uint>();
-            for (uint i = 0; i < indices.Count(); i++)
+            for (uint i = 0; i < indices.Count; i++)
             {
                 if (indicescount[i] > 1)
                 {
@@ -183,7 +181,7 @@ namespace HKX2.Builders
             Dictionary<uint, uint> sharedIndexRemapTable = new Dictionary<uint, uint>();
             foreach (var i in shared.OrderBy(x => x))
             {
-                sharedIndexRemapTable.Add(i, (uint) sharedVerts.Count());
+                sharedIndexRemapTable.Add(i, (uint) sharedVerts.Count);
                 sharedVerts.Add(CompressSharedVertex(verts[(int) i], bnodes[0].Min, bnodes[0].Max));
             }
 
@@ -199,9 +197,9 @@ namespace HKX2.Builders
             shape.m_weldingType = WeldingType.WELDING_TYPE_ANTICLOCKWISE;
             shape.m_hasPerPrimitiveUserData = true;
             shape.m_hasPerPrimitiveCollisionFilterInfo = true;
-            shape.m_collisionFilterInfoPalette = new List<uint> {0x90000000};
-            shape.m_userDataPalette = new List<uint> {0x00000002};
-            shape.m_userStringPalette = new List<string> {"A lonely compressed mesh"};
+            shape.m_collisionFilterInfoPalette = new List<uint>{0x90000000};
+            shape.m_userDataPalette = new List<uint>{0x00000002};
+            shape.m_userStringPalette = new List<string>{"A lonely compressed mesh"};
             shape.m_tree = new hkpBvCompressedMeshShapeTree();
             shape.m_tree.m_nodes = new List<hkcdStaticTreeCodec3Axis5>();
             shape.m_tree.m_domain = new hkAabb();
@@ -215,8 +213,8 @@ namespace HKX2.Builders
             var tree = shape.m_tree;
                 
             // tree.m_domain = new hkAabb();
-            tree.m_domain.m_min = new Vector4(bnodes[0].Min.X, bnodes[0].Min.Y, bnodes[0].Min.Z, 1.0f);
-            tree.m_domain.m_max = new Vector4(bnodes[0].Max.X, bnodes[0].Max.Y, bnodes[0].Max.Z, 1.0f);
+            tree.m_domain.m_min = new Vector4(bnodes[0].Min.X, bnodes[0].Min.Y, bnodes[0].Min.Z, 1f);
+            tree.m_domain.m_max = new Vector4(bnodes[0].Max.X, bnodes[0].Max.Y, bnodes[0].Max.Z, 1f);
             tree.m_nodes = bnodes[0].BuildAxis5Tree();
             tree.m_sharedVertices = sharedVerts;
 
@@ -236,8 +234,8 @@ namespace HKX2.Builders
                 sec.m_codecParms_4 = scale.Y;
                 sec.m_codecParms_5 = scale.Z;
                 sec.m_domain = new hkAabb();
-                sec.m_domain.m_min = new Vector4(s.SectionHead.Min.X, s.SectionHead.Min.Y, s.SectionHead.Min.Z, 1.0f);
-                sec.m_domain.m_max = new Vector4(s.SectionHead.Max.X, s.SectionHead.Max.Y, s.SectionHead.Max.Z, 1.0f);
+                sec.m_domain.m_min = new Vector4(s.SectionHead.Min.X, s.SectionHead.Min.Y, s.SectionHead.Min.Z, 1f);
+                sec.m_domain.m_max = new Vector4(s.SectionHead.Max.X, s.SectionHead.Max.Y, s.SectionHead.Max.Z, 1f);
                     
                 // Map the indices to either shared/packed verts and pack verts that need packing
                 var packedIndicesRemap = new Dictionary<uint, byte>();
@@ -287,9 +285,9 @@ namespace HKX2.Builders
 
                 // Create a data run
                 sec.m_dataRuns = new hkcdStaticMeshTreeBaseSectionDataRuns();
-                sec.m_dataRuns.m_data = ((uint)tree.m_primitiveDataRuns.Count() << 8) | 1;
+                sec.m_dataRuns.m_data = ((uint)tree.m_primitiveDataRuns.Count << 8) | 1;
                 var run = new hkpBvCompressedMeshShapeTreeDataRun();
-                run.m_count = (byte)(s.Indices.Count / 3);
+                run.m_count = (byte) (s.Indices.Count / 3);
                 run.m_index = 0;
                 run.m_value = 0; // Stores collisionFilterInfoPalette index, userDataPalette index, override flags
                 tree.m_primitiveDataRuns.Add(run);
@@ -301,12 +299,11 @@ namespace HKX2.Builders
 
             tree.m_numPrimitiveKeys = tree.m_primitives.Count;
             // tree.m_maxKeyValue = 30; // ?
-            tree.m_maxKeyValue = (uint)(tree.m_nodes.Count - 1);
+            tree.m_maxKeyValue = (uint) (tree.m_sections.Last().m_nodes.Count - 1);
             // tree.m_bitsPerKey = 5; // ?
-            tree.m_bitsPerKey = 
-                Convert.ToString(tree.m_maxKeyValue, 2).Length +
-                Convert.ToString(tree.m_sections.Count - 1, 2).Length;
-                
+            tree.m_bitsPerKey = Convert.ToString(tree.m_maxKeyValue, 2).Length +
+                                Convert.ToString(tree.m_sections.Count - 1, 2).Length;
+
             return shape;
         }
     }

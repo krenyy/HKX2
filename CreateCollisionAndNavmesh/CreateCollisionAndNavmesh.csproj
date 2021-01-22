@@ -13,6 +13,7 @@
     
     <ItemGroup>
       <ProjectReference Include="..\HKX2\HKX2.csproj" />
+      <ProjectReference Include="..\UnitTests\UnitTests.csproj" />
     </ItemGroup>
 
     <ItemGroup>
