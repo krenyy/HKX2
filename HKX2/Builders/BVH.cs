@@ -2,28 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using HKX2.Builders.Extensions;
 
 namespace HKX2.Builders
 {
-    [StructLayout(LayoutKind.Explicit, Size = 32)]
-    public struct NativeBVHNode
-    {
-        [FieldOffset(0)] public float minX;
-        [FieldOffset(4)] public float maxX;
-        [FieldOffset(8)] public float minY;
-        [FieldOffset(12)] public float maxY;
-        [FieldOffset(16)] public float minZ;
-        [FieldOffset(20)] public float maxZ;
-        [FieldOffset(24)] private uint isLeafAndPrimitiveCount;
-
-        public bool isLeaf => Convert.ToBoolean(isLeafAndPrimitiveCount & 1);
-        public uint primitiveCount => (isLeafAndPrimitiveCount >> 1);
-        
-        [FieldOffset(28)] public uint firstChildOrPrimitive;
-    }
-
     public class BVNode
     {
         public uint Primitive;
