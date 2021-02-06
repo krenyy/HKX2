@@ -206,6 +206,7 @@ namespace HKX2.Builders
             queryMediator.m_navMesh = nmesh;
             namedVariant03.m_variant = queryMediator;
 
+            root.m_namedVariants = new List<hkRootLevelContainerNamedVariant>();
             root.m_namedVariants.Add(namedVariant01);
             root.m_namedVariants.Add(namedVariant02);
             root.m_namedVariants.Add(namedVariant03);
