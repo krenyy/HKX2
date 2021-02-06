@@ -7,3 +7,4 @@ _ReSharper.Caches/
 .idea/
 UnitTests/Testfiles
 HKX2.sln.DotSettings.user
+NavGen/build

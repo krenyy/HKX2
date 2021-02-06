@@ -1,0 +1,6 @@
+[submodule "NavGen/lib/bvh"]
+	path = NavGen/lib/bvh
+	url = https://github.com/madmann91/bvh
+[submodule "NavGen/lib/recastnavigation"]
+	path = NavGen/lib/recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation

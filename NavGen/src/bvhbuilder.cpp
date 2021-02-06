@@ -1,15 +1,8 @@
+#include "framework.h"
 #include "bvh/bvh.hpp"
 #include "bvh/vector.hpp"
 #include "bvh/triangle.hpp"
 #include "bvh/sweep_sah_builder.hpp"
-
-#ifdef _WIN32
-#define DllExport extern "C"  __declspec( dllexport )
-#endif
-
-#ifdef __unix__
-#define DllExport extern "C" 
-#endif
 
 using Scalar = float;
 using Vector3 = bvh::Vector3<Scalar>;
@@ -53,7 +46,7 @@ DllExport bool BuildBVHForMesh(float* verts, int vcount, unsigned int* indices, 
 
 	for (int i = 0; i < bbvh.node_count; i++)
 	{
-		if (bbvh.nodes[i].is_leaf)
+		if (bbvh.nodes[i].is_leaf())
 		{
 			bbvh.nodes[i].first_child_or_primitive = bbvh.primitive_indices[bbvh.nodes[i].first_child_or_primitive];
 		}
