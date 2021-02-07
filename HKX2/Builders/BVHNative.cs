@@ -4,21 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace HKX2.Builders
 {
-    [StructLayout(LayoutKind.Explicit, Size = 32)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct NativeBVHNode
     {
-        [FieldOffset(0)] public float minX;
-        [FieldOffset(4)] public float maxX;
-        [FieldOffset(8)] public float minY;
-        [FieldOffset(12)] public float maxY;
-        [FieldOffset(16)] public float minZ;
-        [FieldOffset(20)] public float maxZ;
-        [FieldOffset(24)] private uint isLeafAndPrimitiveCount;
-
-        public bool isLeaf => Convert.ToBoolean(isLeafAndPrimitiveCount & 1);
-        public uint primitiveCount => isLeafAndPrimitiveCount >> 1;
+        public float minX;
+        public float maxX;
+        public float minY;
+        public float maxY;
+        public float minZ;
+        public float maxZ;
+        public uint primitiveCount;
+        public uint firstChildOrPrimitive;
         
-        [FieldOffset(28)] public uint firstChildOrPrimitive;
+        public bool isLeaf => primitiveCount > 0;
     }
 
     public static class BVHNative
