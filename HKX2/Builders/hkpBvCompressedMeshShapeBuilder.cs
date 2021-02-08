@@ -85,6 +85,8 @@ namespace HKX2.Builders
             return (x & 0x7FF) | ((y & 0x7FF) << 11) | ((z & 0x3FF) << 22);
         }
 
+        private static int GetBitLength(int n) => n == 0 ? 0 : Convert.ToString(n, 2).Length;
+        
         public static hkpBvCompressedMeshShape Build(List<Vector3> verts, List<uint> indices)
         {
             // Try and build the BVH for the mesh first
@@ -298,11 +300,12 @@ namespace HKX2.Builders
             }
 
             tree.m_numPrimitiveKeys = tree.m_primitives.Count;
-            // tree.m_maxKeyValue = 30; // ?
-            tree.m_maxKeyValue = (uint) (tree.m_sections.Last().m_nodes.Count - 1);
-            // tree.m_bitsPerKey = 5; // ?
-            tree.m_bitsPerKey = Convert.ToString(tree.m_maxKeyValue, 2).Length +
-                                Convert.ToString(tree.m_sections.Count - 1, 2).Length;
+            
+            // The maxKeyValue is probably not correct,
+            // but the calculated bitsPerKey value seems legit.
+            tree.m_maxKeyValue = (uint) tree.m_sections.Select(section => section.m_nodes.Count).Max();
+            tree.m_bitsPerKey = GetBitLength((int) tree.m_maxKeyValue) +
+                                GetBitLength(tree.m_sections.Count - 1);
 
             return shape;
         }
