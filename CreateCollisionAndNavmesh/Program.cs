@@ -44,11 +44,8 @@ namespace CreateCollisionAndNavmesh
             var roots = new List<IHavokObject>();
             switch (extension)
             {
-                // Crashes in-game, no idea why
-                /*case "hksc":
+                case "hksc":
                 {
-                    throw new Exception();
-                    
                     #region StaticCompoundInfo
 
                     var staticCompoundInfo = new StaticCompoundInfo();
@@ -190,19 +187,19 @@ namespace CreateCollisionAndNavmesh
                     staticCompoundShape.m_shapeInfoCodecType = ShapeInfoCodecTypeEnum.NULL_CODEC;
                     staticCompoundShape.m_userData = 0;
                     staticCompoundShape.m_bvTreeType = BvTreeType.BVTREE_STATIC_COMPOUND;
-                    staticCompoundShape.m_numBitsForChildShapeKey = 15;
+                    staticCompoundShape.m_numBitsForChildShapeKey = 32;  // too high, overwritten below
                     staticCompoundShape.m_instances = new List<hkpStaticCompoundShapeInstance>();
-                    var instance = new hkpStaticCompoundShapeInstance();
-                    instance.m_transform = new Matrix4x4(
+                    var staticCompoundShapeInstance = new hkpStaticCompoundShapeInstance();
+                    staticCompoundShapeInstance.m_transform = new Matrix4x4(
                         0f, 0f, 0f, .5000001f,
                         0f, 0f, 0f, 1f,
                         1f, 1f, 1f, .5f,
                         0f, 0f, 0f, 1f);
-                    instance.m_shape = null;
-                    instance.m_filterInfo = 0;
-                    instance.m_childFilterInfoMask = 0xFFFFFFFF;
-                    instance.m_userData = 0; // ShapeInfo index
-                    staticCompoundShape.m_instances.Add(instance);
+                    staticCompoundShapeInstance.m_shape = null;
+                    staticCompoundShapeInstance.m_filterInfo = 0;
+                    staticCompoundShapeInstance.m_childFilterInfoMask = 0xFFFFFFFF;
+                    staticCompoundShapeInstance.m_userData = 0; // ShapeInfo index
+                    staticCompoundShape.m_instances.Add(staticCompoundShapeInstance);
                     staticCompoundShape.m_instanceExtraInfos = new List<ushort>();
                     staticCompoundShape.m_disabledLargeShapeKeyTable = new hkpShapeKeyTable();
                     staticCompoundShape.m_disabledLargeShapeKeyTable.m_lists = null;
@@ -224,12 +221,20 @@ namespace CreateCollisionAndNavmesh
                     #region hkpBvCompressedMeshShape
                     
                     var compressedMeshShape = hkpBvCompressedMeshShapeBuilder.Build(verts, indices);
-                    instance.m_shape = compressedMeshShape;
+                    staticCompoundShapeInstance.m_shape = compressedMeshShape;
+
                     var cmeshDomain = compressedMeshShape.m_tree.m_domain;
                     staticCompoundShape.m_tree.m_domain.m_min = new Vector4(
                         cmeshDomain.m_min.X, cmeshDomain.m_min.Y, cmeshDomain.m_min.Z, 0f);
                     staticCompoundShape.m_tree.m_domain.m_max = new Vector4(
                         cmeshDomain.m_max.X, cmeshDomain.m_max.Y, cmeshDomain.m_max.Z, 0f);
+                    
+                    // Really important, otherwise CTD
+                    staticCompoundShape.m_numBitsForChildShapeKey = (sbyte) staticCompoundShape.m_instances
+                        // It might be possible/necessary to include other shapes, but it works so far
+                        .FindAll(instance => instance.m_shape is hkpBvCompressedMeshShape)
+                        .Select(instance => ((hkpBvCompressedMeshShape) instance.m_shape).m_tree.m_bitsPerKey)
+                        .Max();
 
                     #endregion
 
@@ -237,7 +242,7 @@ namespace CreateCollisionAndNavmesh
                     roots.Add(root);
 
                     break;
-                }*/
+                }
                 case "hkrb":
                 {
                     #region hkRootLevelContainer
