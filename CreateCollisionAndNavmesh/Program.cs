@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using HKX2;
 using HKX2.Builders;
 using ObjLoader.Loader.Loaders;
@@ -24,6 +25,7 @@ namespace CreateCollisionAndNavmesh
 
             var verts = new List<Vector3>();
             var indices = new List<uint>();
+            var primitiveInfos = new List<Tuple<uint, uint>>();
 
             foreach (var vert in res.Vertices)
             {
@@ -32,11 +34,21 @@ namespace CreateCollisionAndNavmesh
 
             foreach (var group in res.Groups)
             {
+                var match = Regex.Match(group.Name, @"\[([a-zA-Z0-9]+)\]");
+                var primitiveInfo = Convert.ToUInt64(
+                    match.Value == "" ? "9000000000000002" : match.Groups[1].Value, 16);
+                
                 foreach (var idx in group.Faces)
                 {
                     indices.Add((uint) (idx[0].VertexIndex - 1));
                     indices.Add((uint) (idx[1].VertexIndex - 1));
                     indices.Add((uint) (idx[2].VertexIndex - 1));
+                    primitiveInfos.Add(
+                        new Tuple<uint, uint>(
+                            (uint)(primitiveInfo >> 32),
+                            (uint)primitiveInfo & 0xFFFFFFFF
+                            )
+                        );
                 }
             }
 
@@ -220,7 +232,7 @@ namespace CreateCollisionAndNavmesh
                     
                     #region hkpBvCompressedMeshShape
                     
-                    var compressedMeshShape = hkpBvCompressedMeshShapeBuilder.Build(verts, indices);
+                    var compressedMeshShape = hkpBvCompressedMeshShapeBuilder.Build(verts, indices, primitiveInfos);
                     staticCompoundShapeInstance.m_shape = compressedMeshShape;
 
                     var cmeshDomain = compressedMeshShape.m_tree.m_domain;
@@ -355,7 +367,7 @@ namespace CreateCollisionAndNavmesh
 
                     #region hkpBvCompressedMeshShape
 
-                    var cmesh = hkpBvCompressedMeshShapeBuilder.Build(verts, indices);
+                    var cmesh = hkpBvCompressedMeshShapeBuilder.Build(verts, indices, primitiveInfos);
                     rigidBody.m_collidable.m_shape = cmesh;
 
                     #endregion
