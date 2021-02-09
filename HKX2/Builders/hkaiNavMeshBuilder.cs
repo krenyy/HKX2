@@ -23,7 +23,7 @@ namespace HKX2.Builders
                 ret.Cellheight = 0.3f;
                 ret.SlopeAngle = 30.0f;
                 ret.AgentHeight = 2.0f;
-                ret.AgentClimb = 0.1f;
+                ret.AgentClimb = 0.5f;
                 ret.AgentRadius = 0.5f;
                 ret.MinRegionArea = 3;
                 return ret;
