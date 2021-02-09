@@ -43,7 +43,7 @@ DllExport void SetNavmeshBuildParams(float cs, float ch, float slopeAngle, float
     memset(&config, 0, sizeof(config));
     config.cs = cs;
     config.ch = ch;
-    config.walkableSlopeAngle = 45.0f;
+    config.walkableSlopeAngle = slopeAngle;
     config.walkableHeight = (int)ceilf(wheight / ch);
     config.walkableClimb = (int)floorf(wclimb / ch);
     config.walkableRadius = (int)ceilf(wradius / cs);
