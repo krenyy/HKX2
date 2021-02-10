@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using HKX2;
-using Tests;
 
 namespace ReadWrite
 {
@@ -9,10 +8,10 @@ namespace ReadWrite
     {
         private static void Main(string[] args)
         {
-            var roots = TestBase.ReadBotwHKX(args[0]);
-            var outBytes = TestBase.WriteBotwHKX(roots, args[0].Split('.').Last(), HKXHeader.BotwNx());
+            var extension = args[0].Split('.').Last();
             
-            File.WriteAllBytes(args[0] + ".out", outBytes);
+            var roots = Util.ReadBotwHKX(File.OpenRead(args[0]), extension);
+            Util.WriteBotwHKX(roots, HKXHeader.BotwNx(), extension, File.OpenWrite(args[0] + ".out"));
         }
     }
 }

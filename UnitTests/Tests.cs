@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HKX2;
@@ -9,16 +8,6 @@ namespace Tests
 {
     public class TestBase
     {
-        private static readonly Dictionary<string, short> BotwSectionOffsetForExtension =
-            new Dictionary<string, short>
-            {
-                {"hkcl", 0},
-                {"hkrg", 0},
-                {"hkrb", 0},
-                {"hktmrb", 16},
-                {"hknm2", 16}
-            };
-
         protected static string[] GetNxFilePathsByExtension(string extension)
         {
             var rootPath =
@@ -60,71 +49,9 @@ namespace Tests
             return GetNxFilePathsByExtension("hknm2");
         }
 
-        public static IHavokObject ReadHKX(byte[] bytes)
-        {
-            var des = new PackFileDeserializer();
-            var br = new BinaryReaderEx(bytes);
-
-            return des.Deserialize(br);
-        }
-
-        public static byte[] WriteHKX(IHavokObject root, HKXHeader header)
-        {
-            var s = new PackFileSerializer();
-            var ms = new MemoryStream();
-            var bw = new BinaryWriterEx(ms);
-            s.Serialize(root, bw, header);
-            return ms.ToArray();
-        }
-
-        public static List<IHavokObject> ReadBotwHKX(string path)
-        {
-            return ReadBotwHKX(File.ReadAllBytes(path), path.Split('.').Last());
-        }
-        
-        public static List<IHavokObject> ReadBotwHKX(byte[] bytes, string extension)
-        {
-            if (extension == "hksc")
-            {
-                var root1 = (StaticCompoundInfo) ReadHKX(bytes);
-                var root2 = (hkRootLevelContainer) ReadHKX(bytes.Skip((int) root1.m_Offset).ToArray());
-                return new List<IHavokObject> {root1, root2};
-            }
-
-            var root = (hkRootLevelContainer) ReadHKX(bytes);
-            return new List<IHavokObject> {root};
-        }
-
-        public static byte[] WriteBotwHKX(IReadOnlyList<IHavokObject> hkxFiles, string extension, HKXHeader header)
-        {
-            if (extension == "hksc")
-            {
-                var root1 = (StaticCompoundInfo) hkxFiles[0];
-                var root2 = (hkRootLevelContainer) hkxFiles[1];
-
-                header.SectionOffset = 0;
-                var writtenRoot1 = WriteHKX(root1, header);
-                root1.m_Offset = (uint) writtenRoot1.Length;
-                writtenRoot1 = WriteHKX(root1, header);
-
-                header.SectionOffset = 16;
-                var writtenRoot2 = WriteHKX(root2, header);
-
-                var resultBytes = new byte[writtenRoot1.Length + writtenRoot2.Length];
-                Buffer.BlockCopy(writtenRoot1, 0, resultBytes, 0, writtenRoot1.Length);
-                Buffer.BlockCopy(writtenRoot2, 0, resultBytes, writtenRoot1.Length, writtenRoot2.Length);
-                return resultBytes;
-            }
-
-            var root = hkxFiles[0];
-            header.SectionOffset = BotwSectionOffsetForExtension[extension];
-            var writtenRoot = WriteHKX(root, header);
-            return writtenRoot;
-        }
-
         private byte[] RoundtripBotwHKX(byte[] bytes, string extension, HKXHeader header)
         {
-            return WriteBotwHKX(ReadBotwHKX(bytes, extension), extension, header);
+            return Util.WriteBotwHKX(Util.ReadBotwHKX(bytes, extension), header, extension);
         }
 
         private void CompareBytes(byte[] bytesFrom, byte[] bytesTo)
