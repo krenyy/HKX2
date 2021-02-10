@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using HKX2;
 using HKX2.Builders;
 using ObjLoader.Loader.Loaders;
-using Tests;
 
 namespace CreateCollisionAndNavmesh
 {
