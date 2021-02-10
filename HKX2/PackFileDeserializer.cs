@@ -363,7 +363,7 @@ namespace HKX2
         public void DeserializePartially(BinaryReaderEx br)
         {
             br.StepIn(0x11);
-            br.BigEndian = (br.ReadByte() == 0x0);
+            br.BigEndian = br.ReadByte() == 0x0;
             br.StepOut();
 
             _header = new HKXHeader(br);
@@ -384,25 +384,8 @@ namespace HKX2
         
         public IHavokObject Deserialize(BinaryReaderEx br)
         {
-            br.StepIn(0x11);
-            br.BigEndian = (br.ReadByte() == 0x0);
-            br.StepOut();
-
-            _header = new HKXHeader(br);
-
-            // Read the 3 sections in the file
-            br.Position = _header.SectionOffset + 0x40;
+            DeserializePartially(br);
             
-            _classSection = new HKXSection(br);
-            _classSection.SectionID = 0;
-            _typeSection = new HKXSection(br);
-            _typeSection.SectionID = 1;
-            _dataSection = new HKXSection(br);
-            _dataSection.SectionID = 2;
-
-            // Process the class names
-            _classnames = _classSection.ReadClassnames(br);
-
             // Deserialize the objects
             _deserializedObjects = new Dictionary<uint, IHavokObject>();
             BinaryReaderEx br2 = new BinaryReaderEx(_header.Endian == 0, _header.PointerSize == 8, _dataSection.SectionData);
