@@ -38,19 +38,19 @@ struct vec3
     float z;
 };
 
-DllExport void SetNavmeshBuildParams(float cs, float ch, float slopeAngle, float wheight, float wclimb, float wradius, int minregionarea)
+DllExport void SetNavmeshBuildParams(float cs, float ch, float walkableSlopeAngle, float walkableHeight, float walkableClimb, float walkableRadius, int minRegionArea)
 {
     memset(&config, 0, sizeof(config));
     config.cs = cs;
     config.ch = ch;
-    config.walkableSlopeAngle = slopeAngle;
-    config.walkableHeight = (int)ceilf(wheight / ch);
-    config.walkableClimb = (int)floorf(wclimb / ch);
-    config.walkableRadius = (int)ceilf(wradius / cs);
+    config.walkableSlopeAngle = walkableSlopeAngle;
+    config.walkableHeight = (int)ceilf(walkableHeight / ch);
+    config.walkableClimb = (int)floorf(walkableClimb / ch);
+    config.walkableRadius = (int)ceilf(walkableRadius / cs);
     config.maxEdgeLen = (int)12;
     config.maxSimplificationError = 1.3f;
-    config.minRegionArea = (int)rcSqr(minregionarea);		// Note: area = size*size
-    config.mergeRegionArea = (int)rcSqr(20);	// Note: area = size*size
+    config.minRegionArea = (int)rcSqr(minRegionArea); // Note: area = size*size
+    config.mergeRegionArea = (int)rcSqr(20); // Note: area = size*size
     config.maxVertsPerPoly = 3;
     config.detailSampleDist = 6;
     config.detailSampleMaxError = 1;

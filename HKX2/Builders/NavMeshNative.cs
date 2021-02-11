@@ -6,7 +6,10 @@ namespace HKX2.Builders
     public static class NavMeshNative
     {
         [DllImport("libNavGen")]
-        public static extern bool SetNavmeshBuildParams(float cs, float ch, float slope, float aheight, float aclimb, float aradius, int minregionarea);
+        public static extern bool SetNavmeshBuildParams(
+            float cs, float ch, float walkableSlopeAngle,
+            float walkableHeight, float walkableClimb,
+            float walkableRadius, int minRegionArea);
 
         [DllImport("libNavGen")]
         public static extern bool BuildNavmeshForMesh([In] Vector3[] verts, int vcount, [In] int[] indices, int icount);

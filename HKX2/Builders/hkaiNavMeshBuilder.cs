@@ -8,23 +8,23 @@ namespace HKX2.Builders
     {
         public struct BuildParams
         {
-            public float Cellsize;
-            public float Cellheight;
-            public float SlopeAngle;
-            public float AgentHeight;
-            public float AgentClimb;
-            public float AgentRadius;
+            public float CellSize;
+            public float CellHeight;
+            public float WalkableSlopeAngle;
+            public float WalkableHeight;
+            public float WalkableClimb;
+            public float WalkableRadius;
             public int MinRegionArea;
 
-            public static BuildParams DefaultParams()
+            public static BuildParams Default()
             {
                 var ret = new BuildParams();
-                ret.Cellsize = 0.3f;
-                ret.Cellheight = 0.3f;
-                ret.SlopeAngle = 30.0f;
-                ret.AgentHeight = 2.0f;
-                ret.AgentClimb = 0.5f;
-                ret.AgentRadius = 0.5f;
+                ret.CellSize = 0.3f;
+                ret.CellHeight = 0.3f;
+                ret.WalkableSlopeAngle = 30.0f;
+                ret.WalkableHeight = 2.0f;
+                ret.WalkableClimb = 0.5f;
+                ret.WalkableRadius = 0.5f;
                 ret.MinRegionArea = 3;
                 return ret;
             }
@@ -33,8 +33,13 @@ namespace HKX2.Builders
         public static hkRootLevelContainer BuildNavmesh(BuildParams p, List<Vector3> verts, List<int> indices)
         {
             var root = new hkRootLevelContainer();
-            NavMeshNative.SetNavmeshBuildParams(p.Cellsize, p.Cellheight, p.SlopeAngle, p.AgentHeight, p.AgentClimb, p.AgentRadius, p.MinRegionArea);
-            var buildSuccess = NavMeshNative.BuildNavmeshForMesh(verts.ToArray(), verts.Count, indices.ToArray(), indices.Count);
+            NavMeshNative.SetNavmeshBuildParams(
+                p.CellSize, p.CellHeight,
+                p.WalkableSlopeAngle, p.WalkableHeight,
+                p.WalkableClimb, p.WalkableRadius,
+                p.MinRegionArea);
+            var buildSuccess = NavMeshNative.BuildNavmeshForMesh(
+                verts.ToArray(), verts.Count, indices.ToArray(), indices.Count);
             if (!buildSuccess)
             {
                 return null;
@@ -77,9 +82,9 @@ namespace HKX2.Builders
                 var vy = bverts[i * 3 + 1];
                 var vz = bverts[i * 3 + 2];
 
-                var vert = new Vector3(bounds[0].X + vx * p.Cellsize,
-                                       bounds[0].Y + vy * p.Cellheight,
-                                       bounds[0].Z + vz * p.Cellsize);
+                var vert = new Vector3(bounds[0].X + vx * p.CellSize,
+                                       bounds[0].Y + vy * p.CellHeight,
+                                       bounds[0].Z + vz * p.CellSize);
                 nmesh.m_vertices.Add(new Vector4(vert.X, vert.Y, vert.Z, 1.0f));
                 vbverts[i] = vert;
             }

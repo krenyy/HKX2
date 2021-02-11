@@ -377,7 +377,7 @@ namespace CreateCollisionAndNavmesh
                 }
                 case "hknm2":
                 {
-                    var root = hkaiNavMeshBuilder.BuildNavmesh(hkaiNavMeshBuilder.BuildParams.DefaultParams(), verts,
+                    var root = hkaiNavMeshBuilder.BuildNavmesh(hkaiNavMeshBuilder.BuildParams.Default(), verts,
                         indices.Select(u => (int) u).ToList());
                     
                     roots.Add(root);
