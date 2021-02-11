@@ -23,7 +23,7 @@ namespace HKX2.Builders
                 ret.CellHeight = 0.3f;
                 ret.WalkableSlopeAngle = 30.0f;
                 ret.WalkableHeight = 2.0f;
-                ret.WalkableClimb = 0.5f;
+                ret.WalkableClimb = 1.0f;
                 ret.WalkableRadius = 0.5f;
                 ret.MinRegionArea = 3;
                 return ret;
