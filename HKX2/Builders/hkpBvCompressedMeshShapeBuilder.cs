@@ -169,6 +169,7 @@ namespace HKX2.Builders
                     secnode.PrimitiveCount = node.PrimitiveCount;
                     secnode.Left = node.Left;
                     secnode.Right = node.Right;
+                    secnode.IsLeaf = node.IsLeaf;
                     node.Left = null;
                     node.Right = null;
                     node.IsLeaf = true;
