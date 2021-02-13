@@ -140,12 +140,12 @@ namespace HKX2.Builders
                 bnode.Primitive = n.firstChildOrPrimitive;
                 bnodes.Add(bnode);
             }
-            for (int i = 0; i < nodes.Length; i++)
+            foreach (var n in bnodes)
             {
-                if (!nodes[i].isLeaf)
+                if (!n.IsLeaf)
                 {
-                    bnodes[i].Left = bnodes[(int) nodes[i].firstChildOrPrimitive];
-                    bnodes[i].Right = bnodes[(int) (nodes[i].firstChildOrPrimitive + 1)];
+                    n.Left = bnodes[(int) n.Primitive];
+                    n.Right = bnodes[(int) n.Primitive + 1];
                 }
             }
 
