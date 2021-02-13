@@ -38,10 +38,6 @@ namespace HKX2.Builders
                         UsedIndices.Add(indices[(int)p * 3 + 1]);
                         UsedIndices.Add(indices[(int)p * 3 + 2]);
                         PrimitiveInfos.Add(primitiveInfos[(int) p]);
-                        /*if (indices[(int)p * 3] == 4 || indices[(int)p * 3 + 1] == 4 || indices[(int)p * 3 + 2] == 4)
-                        {
-                            n.Primitive = n.Primitive;
-                        }*/
                     }
                     else
                     {
