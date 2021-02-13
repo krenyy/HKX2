@@ -271,8 +271,7 @@ namespace HKX2.Builders
                     {
                         packedIndicesRemap.Add(idx, idxcounter);
                         var vert = verts[(int) idx];
-                        tree.m_packedVertices.Add(CompressPackedVertex(verts[(int) idx], scale, offset));
-                        var decomp = DecompressPackedVertex(tree.m_packedVertices.Last(), scale, offset);
+                        tree.m_packedVertices.Add(CompressPackedVertex(vert, scale, offset));
                         idxcounter++;
                     }
                 }
