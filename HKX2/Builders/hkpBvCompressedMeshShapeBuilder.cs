@@ -119,7 +119,7 @@ namespace HKX2.Builders
             var bv = verts.ToArray();
             var bi = indices.ToArray();
             
-            bool didbuild = BVHNative.BuildBVHForMesh(bv, bv.Length, bi, bi.Length);
+            bool didbuild = BVHNative.BuildBVHForMesh(bv, bi, bi.Length);
             if (!didbuild) throw new Exception();
             
             var nodecount = BVHNative.GetBVHSize();

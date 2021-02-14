@@ -144,7 +144,7 @@ namespace HKX2.Builders
                 shortIndices[i + 1] = bindices[i * 2 + 1];
                 shortIndices[i + 2] = bindices[i * 2 + 2];
             }
-            bool didbuild = BVHNative.BuildBVHForMesh(vbverts, vbverts.Length, shortIndices.Select(arg => (uint) arg).ToArray(), shortIndices.Length);
+            bool didbuild = BVHNative.BuildBVHForMesh(vbverts, shortIndices.Select(arg => (uint) arg).ToArray(), shortIndices.Length);
             if (!didbuild)
             {
                 return null;
