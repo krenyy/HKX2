@@ -3,15 +3,6 @@ using System.Collections.Generic;
 
 namespace HKX2
 {
-    public struct SerializeParams
-    {
-        public byte PointerSize;
-        public byte Endian;
-        public byte PaddingOption;
-        public byte BaseClass;
-        public short SectionOffset;
-    }
-    
     public class HKXHeader
     {
         public uint Magic0;
