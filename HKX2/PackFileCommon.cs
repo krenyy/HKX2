@@ -93,7 +93,7 @@ namespace HKX2
 
         public static HKXHeader BotwWiiu()
         {
-            var ret = new HKXHeader
+            return new HKXHeader
             {
                 Magic0 = 0x57E0E057,
                 Magic1 = 0x10C0C010,
@@ -118,12 +118,11 @@ namespace HKX2
                 Unk48 = 0,
                 Unk4C = 0
             };
-            return ret;
         }
 
         public static HKXHeader BotwNx()
         {
-            var ret = new HKXHeader
+            return new HKXHeader
             {
                 Magic0 = 0x57E0E057,
                 Magic1 = 0x10C0C010,
@@ -148,7 +147,6 @@ namespace HKX2
                 Unk48 = 0,
                 Unk4C = 0
             };
-            return ret;
         }
     }
 
