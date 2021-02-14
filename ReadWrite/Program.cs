@@ -9,9 +9,16 @@ namespace ReadWrite
         private static void Main(string[] args)
         {
             var extension = args[0].Split('.').Last();
-            
-            var roots = Util.ReadBotwHKX(File.OpenRead(args[0]), extension);
-            Util.WriteBotwHKX(roots, HKXHeader.BotwNx(), extension, File.OpenWrite(args[0] + ".out"));
+
+            using (var rs = File.OpenRead(args[0]))
+            {
+                var roots = Util.ReadBotwHKX(rs, extension);
+                
+                using (var ws = File.OpenWrite($@"{args[0]}.out"))
+                {
+                    Util.WriteBotwHKX(roots, HKXHeader.BotwNx(), extension, ws);
+                }
+            }
         }
     }
 }

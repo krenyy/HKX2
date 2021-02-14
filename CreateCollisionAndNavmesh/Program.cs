@@ -387,7 +387,10 @@ namespace CreateCollisionAndNavmesh
                 default: throw new Exception();
             }
 
-            Util.WriteBotwHKX(roots, HKXHeader.BotwWiiu(), extension, File.OpenWrite($@"{args[0]}.{args[1]}"));
+            using (var ws = File.OpenWrite($@"{args[0]}.{args[1]}"))
+            {
+                Util.WriteBotwHKX(roots, HKXHeader.BotwWiiu(), extension, ws);
+            }
         }
     }
 }
