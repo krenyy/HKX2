@@ -45,6 +45,11 @@ namespace PlatformConverter
     }
 }
 ```
+
+### Used libraries
+- [bvh](https://github.com/madmann91/bvh)
+- [recastnavigation](https://github.com/recastnavigation/recastnavigation)
+
 ### Credits
 - [katalash](https://github.com/katalash) - The original HKX2 library included in [DSMapStudio](https://github.com/katalash/DSMapStudio)
 - [JKAnderson](https://github.com/JKAnderson) - BinaryReaderEx and BinaryWriterEx included in  [SoulsFormats](https://github.com/JKAnderson/SoulsFormats)
