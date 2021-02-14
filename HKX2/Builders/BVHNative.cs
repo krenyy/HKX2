@@ -21,6 +21,9 @@ namespace HKX2.Builders
     public static class BVHNative
     {
         [DllImport("libNavGen")]
+        public static extern bool BuildBVHForDomains([In] Vector3[] domains, int domainCount);
+        
+        [DllImport("libNavGen")]
         public static extern bool BuildBVHForMesh([In] Vector3[] vertices, [In] uint[] indices, int icount);
 
         [DllImport("libNavGen")]
