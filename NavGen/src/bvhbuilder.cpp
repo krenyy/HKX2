@@ -6,10 +6,48 @@
 
 using Scalar = float;
 using Vector3 = bvh::Vector3<Scalar>;
+using BoundingBox = bvh::BoundingBox<Scalar>;
 using Triangle = bvh::Triangle<Scalar>;
 using Bvh = bvh::Bvh<Scalar>;
 
 Bvh bbvh;
+
+DllExport [[maybe_unused]] bool BuildBVHForDomains(const float *domains, int boxCount) {
+    // Bounding box array for processing
+    std::vector<BoundingBox> bboxes;
+    bboxes.reserve(boxCount);
+    for (int i = 0; i < boxCount; i++) {
+        bboxes.emplace_back(
+                Vector3(domains[i * 6], domains[i * 6 + 1], domains[i * 6 + 2]),
+                Vector3(domains[i * 6 + 3], domains[i * 6 + 4], domains[i * 6 + 5])
+        );
+    }
+
+    std::vector<Vector3> centers;
+    centers.reserve(bboxes.size());
+    for (auto &bbox : bboxes) {
+        centers.emplace_back(
+                bbox.center()
+        );
+    }
+
+    BoundingBox *pbboxes = &bboxes[0];
+    Vector3 *pcenters = &centers[0];
+
+    // Build bvh
+    bvh::SweepSahBuilder<Bvh> builder(bbvh);
+    builder.max_leaf_size = 1;
+    auto globalBBox = bvh::compute_bounding_boxes_union(pbboxes, bboxes.size());
+    builder.build(globalBBox, pbboxes, pcenters, bboxes.size());
+
+    for (int i = 0; i < bbvh.node_count; i++) {
+        if (bbvh.nodes[i].is_leaf()) {
+            bbvh.nodes[i].first_child_or_primitive = bbvh.primitive_indices[bbvh.nodes[i].first_child_or_primitive];
+        }
+    }
+
+    return true;
+}
 
 DllExport [[maybe_unused]] bool BuildBVHForMesh(const float *verts, const unsigned int *indices, int icount) {
     // Triangle array for processing
