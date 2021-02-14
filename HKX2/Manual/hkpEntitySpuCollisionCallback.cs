@@ -30,7 +30,7 @@ namespace HKX2
         
         public virtual void Write(PackFileSerializer s, BinaryWriterEx bw)
         {
-            s.WriteEmptyPointer(bw); // util
+            s.WriteVoidPointer(bw); // util
             bw.WriteUInt16(0); // capacity
             bw.WriteByte((byte)m_eventFilter);
             bw.WriteByte(m_userFilter);

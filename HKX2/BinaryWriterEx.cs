@@ -14,9 +14,9 @@ namespace HKX2
 
         public bool BigEndian { get; set; }
 
-        public bool USizeLong { get; set; }
+        public bool USizeLong { get; }
 
-        public Stream Stream { get; private set; }
+        public Stream Stream { get; }
 
         public long Position
         {
@@ -26,11 +26,17 @@ namespace HKX2
 
         public long Length => Stream.Length;
 
-        public BinaryWriterEx() : this(false, false) { }
-        
-        public BinaryWriterEx(Stream stream) : this(false, false, stream) { }
-        
-        public BinaryWriterEx(bool bigEndian, bool uSizeLong) : this(bigEndian, uSizeLong, new MemoryStream()) { }
+        public BinaryWriterEx() : this(false, false)
+        {
+        }
+
+        public BinaryWriterEx(Stream stream) : this(false, false, stream)
+        {
+        }
+
+        public BinaryWriterEx(bool bigEndian, bool uSizeLong) : this(bigEndian, uSizeLong, new MemoryStream())
+        {
+        }
 
         public BinaryWriterEx(bool bigEndian, bool uSizeLong, Stream stream)
         {
@@ -93,16 +99,17 @@ namespace HKX2
             while (Stream.Position % align > 0)
                 WriteByte(0);
         }
-        
+
         public void WriteUSize(ulong value)
         {
             if (USizeLong)
                 WriteUInt64(value);
             else
-                WriteUInt32((uint)value);
+                WriteUInt32((uint) value);
         }
 
         #region Boolean
+
         public void WriteBoolean(bool value)
         {
             bw.Write(value);
@@ -119,9 +126,11 @@ namespace HKX2
             WriteBoolean(value);
             StepOut();
         }
+
         #endregion
 
         #region SByte
+
         public void WriteSByte(sbyte value)
         {
             bw.Write(value);
@@ -138,9 +147,11 @@ namespace HKX2
             WriteSByte(value);
             StepOut();
         }
+
         #endregion
 
         #region Byte
+
         public void WriteByte(byte value)
         {
             bw.Write(value);
@@ -157,9 +168,11 @@ namespace HKX2
             WriteByte(value);
             StepOut();
         }
+
         #endregion
 
         #region Int16
+
         public void WriteInt16(short value)
         {
             if (BigEndian)
@@ -179,9 +192,11 @@ namespace HKX2
             WriteInt16(value);
             StepOut();
         }
+
         #endregion
 
         #region UInt16
+
         public void WriteUInt16(ushort value)
         {
             if (BigEndian)
@@ -201,9 +216,11 @@ namespace HKX2
             WriteUInt16(value);
             StepOut();
         }
+
         #endregion
 
         #region Int32
+
         public void WriteInt32(int value)
         {
             if (BigEndian)
@@ -223,9 +240,11 @@ namespace HKX2
             WriteInt32(value);
             StepOut();
         }
+
         #endregion
 
         #region UInt32
+
         public void WriteUInt32(uint value)
         {
             if (BigEndian)
@@ -245,9 +264,11 @@ namespace HKX2
             WriteUInt32(value);
             StepOut();
         }
+
         #endregion
 
         #region Int64
+
         public void WriteInt64(long value)
         {
             if (BigEndian)
@@ -267,9 +288,11 @@ namespace HKX2
             WriteInt64(value);
             StepOut();
         }
+
         #endregion
 
         #region UInt64
+
         public void WriteUInt64(ulong value)
         {
             if (BigEndian)
@@ -289,9 +312,11 @@ namespace HKX2
             WriteUInt64(value);
             StepOut();
         }
+
         #endregion
 
         #region Single
+
         public void WriteSingle(float value)
         {
             if (BigEndian)
@@ -311,9 +336,11 @@ namespace HKX2
             WriteSingle(value);
             StepOut();
         }
+
         #endregion
 
         #region Double
+
         public void WriteDouble(double value)
         {
             if (BigEndian)
@@ -333,9 +360,11 @@ namespace HKX2
             WriteDouble(value);
             StepOut();
         }
+
         #endregion
 
         #region String
+
         private void WriteChars(string text, Encoding encoding, bool terminate)
         {
             if (terminate)
@@ -359,9 +388,11 @@ namespace HKX2
             Array.Copy(bytes, fixstr, Math.Min(size, bytes.Length));
             bw.Write(fixstr);
         }
+
         #endregion
 
         #region Other
+
         public void WriteVector4(Vector4 vector)
         {
             WriteSingle(vector.X);
@@ -369,6 +400,7 @@ namespace HKX2
             WriteSingle(vector.Z);
             WriteSingle(vector.W);
         }
+
         #endregion
     }
 }

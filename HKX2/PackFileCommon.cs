@@ -28,8 +28,10 @@ namespace HKX2
         public uint Unk48;
         public uint Unk4C;
 
-        private HKXHeader() { }
-        
+        private HKXHeader()
+        {
+        }
+
         internal HKXHeader(BinaryReaderEx br)
         {
             Magic0 = br.AssertUInt32(0x57E0E057);
@@ -49,15 +51,14 @@ namespace HKX2
             Flags = br.ReadInt32();
             MaxPredicate = br.ReadInt16();
             SectionOffset = br.ReadInt16();
-            
-            if (SectionOffset == 0)
-            {
-                Unk40 = br.ReadInt16();
-                Unk42 = br.ReadInt16();
-                Unk44 = br.ReadUInt32();
-                Unk48 = br.ReadUInt32();
-                Unk4C = br.ReadUInt32();
-            }
+
+            if (SectionOffset != 16) return;
+
+            Unk40 = br.ReadInt16();
+            Unk42 = br.ReadInt16();
+            Unk44 = br.ReadUInt32();
+            Unk48 = br.ReadUInt32();
+            Unk4C = br.ReadUInt32();
         }
 
         internal void Write(BinaryWriterEx bw)
@@ -81,81 +82,88 @@ namespace HKX2
             bw.WriteInt16(MaxPredicate);
             bw.WriteInt16(SectionOffset);
 
-            if (SectionOffset == 16)
-            {
-                bw.WriteInt16(Unk40); // Unk40
-                bw.WriteInt16(Unk42); // Unk42
-                bw.WriteUInt32(Unk44); // Unk44
-                bw.WriteUInt32(Unk48); // Unk48
-                bw.WriteUInt32(Unk4C); // Unk4C
-            }
+            if (SectionOffset != 16) return;
+
+            bw.WriteInt16(Unk40);
+            bw.WriteInt16(Unk42);
+            bw.WriteUInt32(Unk44);
+            bw.WriteUInt32(Unk48);
+            bw.WriteUInt32(Unk4C);
         }
 
         public static HKXHeader BotwWiiu()
         {
-            var ret = new HKXHeader();
-            ret.Magic0 = 0x57E0E057;
-            ret.Magic1 = 0x10C0C010;
-            ret.UserTag = 0;
-            ret.FileVersion = 0x0B;
-            ret.PointerSize = 4;
-            ret.Endian = 0;
-            ret.PaddingOption = 0;
-            ret.BaseClass = 1;
-            ret.SectionCount = 3;
-            ret.ContentsSectionIndex = 2;
-            ret.ContentsSectionOffset = 0;
-            ret.ContentsClassNameSectionIndex = 0;
-            ret.ContentsClassNameSectionOffset = 0x4B;
-            ret.ContentsVersionString = "hk_2014.2.0-r1";
-            ret.Flags = 0;
-            ret.MaxPredicate = 21;
-            ret.SectionOffset = 0;
-            ret.Unk40 = 20;
-            ret.Unk42 = 0;
-            ret.Unk44 = 0;
-            ret.Unk48 = 0;
-            ret.Unk4C = 0;
+            var ret = new HKXHeader
+            {
+                Magic0 = 0x57E0E057,
+                Magic1 = 0x10C0C010,
+                UserTag = 0,
+                FileVersion = 0x0B,
+                PointerSize = 4,
+                Endian = 0,
+                PaddingOption = 0,
+                BaseClass = 1,
+                SectionCount = 3,
+                ContentsSectionIndex = 2,
+                ContentsSectionOffset = 0,
+                ContentsClassNameSectionIndex = 0,
+                ContentsClassNameSectionOffset = 0x4B,
+                ContentsVersionString = "hk_2014.2.0-r1",
+                Flags = 0,
+                MaxPredicate = 21,
+                SectionOffset = 0,
+                Unk40 = 20,
+                Unk42 = 0,
+                Unk44 = 0,
+                Unk48 = 0,
+                Unk4C = 0
+            };
             return ret;
         }
-            
+
         public static HKXHeader BotwNx()
         {
-            var ret = new HKXHeader();
-            ret.Magic0 = 0x57E0E057;
-            ret.Magic1 = 0x10C0C010;
-            ret.UserTag = 0;
-            ret.FileVersion = 0x0B;
-            ret.PointerSize = 8;
-            ret.Endian = 1;
-            ret.PaddingOption = 1;
-            ret.BaseClass = 1;
-            ret.SectionCount = 3;
-            ret.ContentsSectionIndex = 2;
-            ret.ContentsSectionOffset = 0;
-            ret.ContentsClassNameSectionIndex = 0;
-            ret.ContentsClassNameSectionOffset = 0x4B;
-            ret.ContentsVersionString = "hk_2014.2.0-r1";
-            ret.Flags = 0;
-            ret.MaxPredicate = 21;
-            ret.SectionOffset = 0;
-            ret.Unk40 = 20;
-            ret.Unk42 = 0;
-            ret.Unk44 = 0;
-            ret.Unk48 = 0;
-            ret.Unk4C = 0;
+            var ret = new HKXHeader
+            {
+                Magic0 = 0x57E0E057,
+                Magic1 = 0x10C0C010,
+                UserTag = 0,
+                FileVersion = 0x0B,
+                PointerSize = 8,
+                Endian = 1,
+                PaddingOption = 1,
+                BaseClass = 1,
+                SectionCount = 3,
+                ContentsSectionIndex = 2,
+                ContentsSectionOffset = 0,
+                ContentsClassNameSectionIndex = 0,
+                ContentsClassNameSectionOffset = 0x4B,
+                ContentsVersionString = "hk_2014.2.0-r1",
+                Flags = 0,
+                MaxPredicate = 21,
+                SectionOffset = 0,
+                Unk40 = 20,
+                Unk42 = 0,
+                Unk44 = 0,
+                Unk48 = 0,
+                Unk4C = 0
+            };
             return ret;
         }
     }
 
-    public interface Fixup { }
-    
+    public interface Fixup
+    {
+    }
+
     public class LocalFixup : Fixup
     {
         public uint Src { get; set; }
         public uint Dst { get; set; }
 
-        public LocalFixup() { }
+        public LocalFixup()
+        {
+        }
 
         internal LocalFixup(BinaryReaderEx br)
         {
@@ -169,7 +177,7 @@ namespace HKX2
             bw.WriteUInt32(Dst);
         }
 
-        protected bool Equals(LocalFixup other)
+        private bool Equals(LocalFixup other)
         {
             return Src == other.Src && Dst == other.Dst;
         }
@@ -178,8 +186,7 @@ namespace HKX2
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((LocalFixup) obj);
+            return obj.GetType() == GetType() && Equals((LocalFixup) obj);
         }
 
         public override int GetHashCode()
@@ -194,7 +201,9 @@ namespace HKX2
         public uint DstSectionIndex { get; set; }
         public uint Dst { get; set; }
 
-        public GlobalFixup() { }
+        public GlobalFixup()
+        {
+        }
 
         internal GlobalFixup(BinaryReaderEx br)
         {
@@ -209,8 +218,8 @@ namespace HKX2
             bw.WriteUInt32(DstSectionIndex);
             bw.WriteUInt32(Dst);
         }
-        
-        protected bool Equals(GlobalFixup other)
+
+        private bool Equals(GlobalFixup other)
         {
             return Src == other.Src && Dst == other.Dst;
         }
@@ -219,8 +228,7 @@ namespace HKX2
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((GlobalFixup) obj);
+            return obj.GetType() == GetType() && Equals((GlobalFixup) obj);
         }
 
         public override int GetHashCode()
@@ -234,14 +242,10 @@ namespace HKX2
         public uint Src { get; set; }
         public uint DstSectionIndex { get; set; }
         public uint Dst { get; set; }
-        
-        public uint NameOffset
-        {
-            get => Dst;
-            set => Dst = value;
-        }
 
-        internal VirtualFixup() { }
+        internal VirtualFixup()
+        {
+        }
 
         internal VirtualFixup(BinaryReaderEx br)
         {
@@ -256,8 +260,8 @@ namespace HKX2
             bw.WriteUInt32(DstSectionIndex);
             bw.WriteUInt32(Dst);
         }
-        
-        protected bool Equals(VirtualFixup other)
+
+        private bool Equals(VirtualFixup other)
         {
             return Src == other.Src && Dst == other.Dst;
         }
@@ -266,8 +270,7 @@ namespace HKX2
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((VirtualFixup) obj);
+            return obj.GetType() == GetType() && Equals((VirtualFixup) obj);
         }
 
         public override int GetHashCode()
@@ -303,7 +306,7 @@ namespace HKX2
     // Class names data found in the __classnames__ section of the hkx
     internal class HKXClassNames
     {
-        public List<HKXClassName> ClassNames;
+        private List<HKXClassName> ClassNames;
         public Dictionary<uint, HKXClassName> OffsetClassNamesMap;
 
         public void Read(BinaryReaderEx br)
@@ -324,10 +327,10 @@ namespace HKX2
 
     public class HKXSection
     {
-        public Dictionary<uint, GlobalFixup> _globalMap = new Dictionary<uint, GlobalFixup>();
+        public readonly Dictionary<uint, GlobalFixup> _globalMap = new Dictionary<uint, GlobalFixup>();
 
-        public Dictionary<uint, LocalFixup> _localMap = new Dictionary<uint, LocalFixup>();
-        public Dictionary<uint, VirtualFixup> _virtualMap = new Dictionary<uint, VirtualFixup>();
+        public readonly Dictionary<uint, LocalFixup> _localMap = new Dictionary<uint, LocalFixup>();
+        public readonly Dictionary<uint, VirtualFixup> _virtualMap = new Dictionary<uint, VirtualFixup>();
         public List<GlobalFixup> GlobalFixups = new List<GlobalFixup>();
 
         public List<LocalFixup> LocalFixups = new List<LocalFixup>();
@@ -370,6 +373,7 @@ namespace HKX2
                     _localMap.Add(f.Src, f);
                     LocalFixups.Add(f);
                 }
+
             br.StepOut();
 
             // Global fixups
@@ -383,6 +387,7 @@ namespace HKX2
                     _globalMap.Add(f.Src, f);
                     GlobalFixups.Add(f);
                 }
+
             br.StepOut();
 
             // Virtual fixups
@@ -396,6 +401,7 @@ namespace HKX2
                     _virtualMap.Add(f.Src, f);
                     VirtualFixups.Add(f);
                 }
+
             br.StepOut();
 
             br.AssertUInt32(0xFFFFFFFF);
@@ -415,7 +421,7 @@ namespace HKX2
             bw.ReserveUInt32("expoffset" + SectionID);
             bw.ReserveUInt32("impoffset" + SectionID);
             bw.ReserveUInt32("endoffset" + SectionID);
-            
+
             bw.WriteUInt32(0xFFFFFFFF);
             bw.WriteUInt32(0xFFFFFFFF);
             bw.WriteUInt32(0xFFFFFFFF);

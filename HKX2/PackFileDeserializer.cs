@@ -7,21 +7,21 @@ namespace HKX2
     public class PackFileDeserializer
     {
         internal HKXHeader _header;
-        internal HKXSection _classSection;
-        internal HKXSection _typeSection;
+        private HKXSection _classSection;
+        private HKXSection _typeSection;
         public HKXSection _dataSection;
 
-        internal HKXClassNames _classnames;
+        private HKXClassNames _classnames;
 
-        internal Dictionary<uint, IHavokObject> _deserializedObjects;
-        
+        private Dictionary<uint, IHavokObject> _deserializedObjects;
+
         #region Read methods
 
-        public void PadToPointerSizeIfPaddingOption(BinaryReaderEx br)
+        private void PadToPointerSizeIfPaddingOption(BinaryReaderEx br)
         {
-            if (this._header.PaddingOption == 1)
+            if (_header.PaddingOption == 1)
             {
-                br.Pad(this._header.PointerSize);
+                br.Pad(_header.PointerSize);
             }
         }
 
@@ -37,23 +37,23 @@ namespace HKX2
             var size = br.ReadUInt32();
             br.AssertUInt32(size | ((uint) 0x80 << 24));
         }
-        
-        public T ReadPointerBase<T, F>(Func<BinaryReaderEx, F, T> func, BinaryReaderEx br) where F: Fixup, new()
+
+        private T ReadPointerBase<T, F>(Func<BinaryReaderEx, F, T> func, BinaryReaderEx br) where F : Fixup, new()
         {
             Dictionary<uint, F> map;
             if (typeof(F) == typeof(LocalFixup))
             {
-                map = (Dictionary<uint, F>)(object)_dataSection._localMap;
+                map = (Dictionary<uint, F>) (object) _dataSection._localMap;
             }
             else if (typeof(F) == typeof(GlobalFixup))
             {
-                map = (Dictionary<uint, F>)(object)_dataSection._localMap;
+                map = (Dictionary<uint, F>) (object) _dataSection._localMap;
             }
             else
             {
                 throw new Exception();
             }
-            
+
             PadToPointerSizeIfPaddingOption(br);
 
             var key = (uint) br.Position;
@@ -68,31 +68,32 @@ namespace HKX2
                 {
                     return func(br, new F());
                 }
-                
+
                 return default;
             }
 
             var f = map[key];
             return func(br, f);
         }
-        
-        public List<T> ReadArrayBase<T>(Func<BinaryReaderEx, T> func, BinaryReaderEx br)
+
+        private List<T> ReadArrayBase<T>(Func<BinaryReaderEx, T> func, BinaryReaderEx br)
         {
-            return ReadPointerBase((BinaryReaderEx br, LocalFixup f) =>
+            return ReadPointerBase((BinaryReaderEx _br, LocalFixup f) =>
             {
-                uint size = br.ReadUInt32();
-                br.AssertUInt32(size | ((uint) 0x80 << 24)); // Capacity and flags
-                
+                uint size = _br.ReadUInt32();
+                _br.AssertUInt32(size | ((uint) 0x80 << 24)); // Capacity and flags
+
                 var res = new List<T>();
-                if (size > 0)
+                
+                if (size <= 0) return res;
+                
+                _br.StepIn(f.Dst);
+                for (var i = 0; i < size; i++)
                 {
-                    br.StepIn(f.Dst);
-                    for (int i = 0; i < size; i++)
-                    {
-                        res.Add(func(br));
-                    }
-                    br.StepOut();
+                    res.Add(func(_br));
                 }
+
+                _br.StepOut();
 
                 return res;
             }, br);
@@ -100,10 +101,10 @@ namespace HKX2
 
         public List<T> ReadClassArray<T>(BinaryReaderEx br) where T : IHavokObject, new()
         {
-            return ReadArrayBase(br =>
+            return ReadArrayBase(_br =>
             {
                 var cls = new T();
-                cls.Read(this, br);
+                cls.Read(this, _br);
                 return cls;
             }, br);
         }
@@ -111,9 +112,9 @@ namespace HKX2
         public T ReadClassPointer<T>(BinaryReaderEx br) where T : IHavokObject
         {
             PadToPointerSizeIfPaddingOption(br);
-            
-            var key = (uint)br.Position;
-            
+
+            var key = (uint) br.Position;
+
             // Consume pointer
             br.AssertUSize(0);
 
@@ -122,6 +123,7 @@ namespace HKX2
             {
                 return default;
             }
+
             var f = _dataSection._globalMap[key];
             return (T) ConstructVirtualClass(br, f.Dst);
         }
@@ -135,8 +137,8 @@ namespace HKX2
         {
             PadToPointerSizeIfPaddingOption(br);
 
-            var key = (uint)br.Position;
-            
+            var key = (uint) br.Position;
+
             // Consume pointer
             br.AssertUSize(0);
 
@@ -145,6 +147,7 @@ namespace HKX2
             {
                 return default;
             }
+
             var f = _dataSection._localMap[key];
             br.StepIn(f.Dst);
             var ret = br.ReadASCII();
@@ -161,7 +164,7 @@ namespace HKX2
         {
             return br.ReadByte();
         }
-        
+
         public List<byte> ReadByteArray(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadByte, br);
@@ -171,7 +174,7 @@ namespace HKX2
         {
             return br.ReadSByte();
         }
-        
+
         public List<sbyte> ReadSByteArray(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadSByte, br);
@@ -181,7 +184,7 @@ namespace HKX2
         {
             return br.ReadUInt16();
         }
-        
+
         public List<ushort> ReadUInt16Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadUInt16, br);
@@ -191,7 +194,7 @@ namespace HKX2
         {
             return br.ReadInt16();
         }
-        
+
         public List<short> ReadInt16Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadInt16, br);
@@ -201,7 +204,7 @@ namespace HKX2
         {
             return br.ReadUInt32();
         }
-        
+
         public List<uint> ReadUInt32Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadUInt32, br);
@@ -211,7 +214,7 @@ namespace HKX2
         {
             return br.ReadInt32();
         }
-        
+
         public List<int> ReadInt32Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadInt32, br);
@@ -221,7 +224,7 @@ namespace HKX2
         {
             return br.ReadUInt64();
         }
-        
+
         public List<ulong> ReadUInt64Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadUInt64, br);
@@ -231,7 +234,7 @@ namespace HKX2
         {
             return br.ReadInt64();
         }
-        
+
         public List<long> ReadInt64Array(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadInt64, br);
@@ -241,7 +244,7 @@ namespace HKX2
         {
             return br.ReadSingle();
         }
-        
+
         public List<float> ReadSingleArray(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadSingle, br);
@@ -251,7 +254,7 @@ namespace HKX2
         {
             return br.ReadBoolean();
         }
-        
+
         public List<bool> ReadBooleanArray(BinaryReaderEx br)
         {
             return ReadArrayBase(ReadBoolean, br);
@@ -329,33 +332,35 @@ namespace HKX2
         {
             return ReadArrayBase(ReadQuaternion, br);
         }
-        
+
         #endregion
-        
-        public IHavokObject ConstructVirtualClass(BinaryReaderEx br, uint offset)
+
+        private IHavokObject ConstructVirtualClass(BinaryReaderEx br, uint offset)
         {
             if (_deserializedObjects.ContainsKey(offset))
             {
                 return _deserializedObjects[offset];
             }
+
             var fixup = _dataSection._virtualMap[offset];
-            var hkClassName = _classnames.OffsetClassNamesMap[fixup.NameOffset].ClassName;
-            
-            Type hkClass = Type.GetType($@"HKX2.{hkClassName}");
+            var hkClassName = _classnames.OffsetClassNamesMap[fixup.Dst].ClassName;
+
+            var hkClass = Type.GetType($@"HKX2.{hkClassName}");
             if (hkClass is null)
             {
                 throw new Exception($@"Havok class type '{hkClassName}' not found!");
             }
-            var ret = (IHavokObject)Activator.CreateInstance(hkClass);
+
+            var ret = (IHavokObject) Activator.CreateInstance(hkClass);
             if (ret is null)
             {
                 throw new Exception();
             }
-            
+
             br.StepIn(offset);
             ret.Read(this, br);
             br.StepOut();
-            
+
             _deserializedObjects.Add(offset, ret);
             return ret;
         }
@@ -370,25 +375,22 @@ namespace HKX2
 
             // Read the 3 sections in the file
             br.Position = _header.SectionOffset + 0x40;
-            
-            _classSection = new HKXSection(br);
-            _classSection.SectionID = 0;
-            _typeSection = new HKXSection(br);
-            _typeSection.SectionID = 1;
-            _dataSection = new HKXSection(br);
-            _dataSection.SectionID = 2;
+
+            _classSection = new HKXSection(br) {SectionID = 0};
+            _typeSection = new HKXSection(br) {SectionID = 1};
+            _dataSection = new HKXSection(br) {SectionID = 2};
 
             // Process the class names
             _classnames = _classSection.ReadClassnames(br);
         }
-        
+
         public IHavokObject Deserialize(BinaryReaderEx br)
         {
             DeserializePartially(br);
-            
+
             // Deserialize the objects
             _deserializedObjects = new Dictionary<uint, IHavokObject>();
-            BinaryReaderEx br2 = new BinaryReaderEx(_header.Endian == 0, _header.PointerSize == 8, _dataSection.SectionData);
+            var br2 = new BinaryReaderEx(_header.Endian == 0, _header.PointerSize == 8, _dataSection.SectionData);
             return ConstructVirtualClass(br2, 0);
         }
     }

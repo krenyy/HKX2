@@ -58,8 +58,8 @@ namespace HKX2
             bw.WriteByte(0); // padding
             bw.WriteUInt16(0); // numChildShapeAabbs
             bw.WriteUInt16(0); // capacityChildShapeAabbs
-            s.WriteEmptyPointer(bw); //childShapeAabbs
-            s.WriteEmptyPointer(bw); //childShapeKeys
+            s.WriteVoidPointer(bw); //childShapeAabbs
+            s.WriteVoidPointer(bw); //childShapeKeys
         }
     }
 }

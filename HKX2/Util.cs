@@ -24,7 +24,7 @@ namespace HKX2
         }
 
         public static IHavokObject ReadHKX(byte[] bytes) => ReadHKX(new MemoryStream(bytes));
-        
+
         public static void WriteHKX(IHavokObject root, HKXHeader header, Stream stream)
         {
             var s = new PackFileSerializer();
@@ -45,12 +45,12 @@ namespace HKX2
             if (extension == "hksc")
             {
                 var root1 = (StaticCompoundInfo) ReadHKX(stream);
-                
+
                 var ms = new MemoryStream();
                 stream.Position = root1.m_Offset;
                 stream.CopyTo(ms);
                 ms.Position = 0;
-                
+
                 var root2 = (hkRootLevelContainer) ReadHKX(ms);
                 return new List<IHavokObject> {root1, root2};
             }
@@ -61,7 +61,7 @@ namespace HKX2
 
         public static List<IHavokObject> ReadBotwHKX(byte[] bytes, string extension) =>
             ReadBotwHKX(new MemoryStream(bytes), extension);
-        
+
 
         public static void WriteBotwHKX(IReadOnlyList<IHavokObject> hkxFiles, HKXHeader header, string extension,
             Stream stream)
@@ -73,7 +73,7 @@ namespace HKX2
 
                 var ms1 = new MemoryStream();
                 var ms2 = new MemoryStream();
-                
+
                 // First StaticCompound HKX file doesn't have predicate
                 header.SectionOffset = 0;
                 // Write to get the length of serialized file - offset of second file

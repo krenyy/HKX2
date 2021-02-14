@@ -19,8 +19,8 @@ namespace HKX2
         {
             s.WriteClassPointer(bw, m_shape);
             bw.WriteUInt32(m_shapeKey);
-            s.WriteEmptyPointer(bw); // motion
-            s.WriteEmptyPointer(bw); // parent
+            s.WriteVoidPointer(bw); // motion
+            s.WriteVoidPointer(bw); // parent
         }
     }
 }

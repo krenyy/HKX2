@@ -28,7 +28,7 @@ namespace HKX2
         public override void Write(PackFileSerializer s, BinaryWriterEx bw)
         {
             base.Write(s, bw);
-            s.WriteEmptyPointer(bw);
+            s.WriteVoidPointer(bw);
             bw.WriteUSize(m_userData);
             m_collidable.Write(s, bw);
             m_multiThreadCheck.Write(s, bw);

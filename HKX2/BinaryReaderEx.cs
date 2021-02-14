@@ -14,9 +14,9 @@ namespace HKX2
 
         public bool BigEndian { get; set; }
 
-        public bool USizeLong { get; set; }
+        public bool USizeLong { get; }
 
-        public Stream Stream { get; private set; }
+        public Stream Stream { get; }
 
         public long Position
         {
@@ -26,11 +26,18 @@ namespace HKX2
 
         public long Length => Stream.Length;
 
-        public BinaryReaderEx(byte[] input) : this(false, false, input) { }
+        public BinaryReaderEx(byte[] input) : this(false, false, input)
+        {
+        }
 
-        public BinaryReaderEx(Stream stream) : this(false, false, stream) { }
+        public BinaryReaderEx(Stream stream) : this(false, false, stream)
+        {
+        }
 
-        public BinaryReaderEx(bool bigEndian, bool uSizeLong, byte[] input) : this(bigEndian, uSizeLong, new MemoryStream(input)) { }
+        public BinaryReaderEx(bool bigEndian, bool uSizeLong, byte[] input) : this(bigEndian, uSizeLong,
+            new MemoryStream(input))
+        {
+        }
 
         public BinaryReaderEx(bool bigEndian, bool uSizeLong, Stream stream)
         {
@@ -41,7 +48,7 @@ namespace HKX2
             br = new BinaryReader(stream);
         }
 
-        
+
         public byte[] ReadBytes(int count)
         {
             byte[] result = br.ReadBytes(count);
@@ -65,7 +72,8 @@ namespace HKX2
 
             string strValue = string.Format(valueFormat, value);
             string strOptions = string.Join(", ", options.Select(o => string.Format(valueFormat, o)));
-            throw new InvalidDataException($"Read {typeName}: {strValue} | Expected: {strOptions} | Ending position: 0x{Position:X}");
+            throw new InvalidDataException(
+                $"Read {typeName}: {strValue} | Expected: {strOptions} | Ending position: 0x{Position:X}");
         }
 
         public void StepIn(long offset)
@@ -78,10 +86,10 @@ namespace HKX2
         {
             if (steps.Count == 0)
                 throw new InvalidOperationException("Reader is already stepped all the way out.");
-            
+
             Stream.Position = steps.Pop();
         }
-        
+
         public void Pad(int align)
         {
             if (Stream.Position % align > 0)
@@ -99,8 +107,9 @@ namespace HKX2
         {
             return AssertValue(ReadUSize(), USizeLong ? "USize64" : "USize32", "0x{0:X}", options);
         }
-        
+
         #region Boolean
+
         public bool ReadBoolean()
         {
             byte b = ReadByte();
@@ -115,11 +124,13 @@ namespace HKX2
 
         public bool AssertBoolean(bool option)
         {
-            return AssertValue(ReadBoolean(), "Boolean", "{0}", new[] { option });
+            return AssertValue(ReadBoolean(), "Boolean", "{0}", new[] {option});
         }
+
         #endregion
 
         #region SByte
+
         public sbyte ReadSByte()
         {
             return (sbyte) ReadByte();
@@ -129,9 +140,11 @@ namespace HKX2
         {
             return AssertValue(ReadSByte(), "SByte", "0x{0:X}", options);
         }
+
         #endregion
 
         #region Byte
+
         public byte ReadByte()
         {
             return ReadBytes(1)[0];
@@ -141,9 +154,11 @@ namespace HKX2
         {
             return AssertValue(ReadByte(), "Byte", "0x{0:X}", options);
         }
+
         #endregion
 
         #region Int16
+
         public short ReadInt16()
         {
             if (BigEndian)
@@ -155,9 +170,11 @@ namespace HKX2
         {
             return AssertValue(ReadInt16(), "Int16", "0x{0:X}", options);
         }
+
         #endregion
 
         #region UInt16
+
         public ushort ReadUInt16()
         {
             if (BigEndian)
@@ -169,9 +186,11 @@ namespace HKX2
         {
             return AssertValue(ReadUInt16(), "UInt16", "0x{0:X}", options);
         }
+
         #endregion
 
         #region Int32
+
         public int ReadInt32()
         {
             if (BigEndian)
@@ -183,9 +202,11 @@ namespace HKX2
         {
             return AssertValue(ReadInt32(), "Int32", "0x{0:X}", options);
         }
+
         #endregion
 
         #region UInt32
+
         public uint ReadUInt32()
         {
             if (BigEndian)
@@ -197,9 +218,11 @@ namespace HKX2
         {
             return AssertValue(ReadUInt32(), "UInt32", "0x{0:X}", options);
         }
+
         #endregion
 
         #region Int64
+
         public long ReadInt64()
         {
             if (BigEndian)
@@ -211,9 +234,11 @@ namespace HKX2
         {
             return AssertValue(ReadInt64(), "Int64", "0x{0:X}", options);
         }
+
         #endregion
 
         #region UInt64
+
         public ulong ReadUInt64()
         {
             if (BigEndian)
@@ -225,9 +250,11 @@ namespace HKX2
         {
             return AssertValue(ReadUInt64(), "UInt64", "0x{0:X}", options);
         }
+
         #endregion
 
         #region Single
+
         public float ReadSingle()
         {
             if (BigEndian)
@@ -239,9 +266,11 @@ namespace HKX2
         {
             return AssertValue(ReadSingle(), "Single", "{0}", options);
         }
+
         #endregion
 
         #region Double
+
         public double ReadDouble()
         {
             if (BigEndian)
@@ -253,9 +282,11 @@ namespace HKX2
         {
             return AssertValue(ReadDouble(), "Double", "{0}", options);
         }
+
         #endregion
 
         #region String
+
         private string ReadChars(Encoding encoding, int length)
         {
             byte[] bytes = ReadBytes(length);
@@ -295,11 +326,14 @@ namespace HKX2
                 if (bytes[terminator] == 0)
                     break;
             }
+
             return Encoding.ASCII.GetString(bytes, 0, terminator);
         }
+
         #endregion
 
         #region Other
+
         public Vector4 ReadVector4()
         {
             float x = ReadSingle();
@@ -308,6 +342,7 @@ namespace HKX2
             float w = ReadSingle();
             return new Vector4(x, y, z, w);
         }
+
         #endregion
     }
 }

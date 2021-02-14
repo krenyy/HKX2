@@ -91,7 +91,7 @@ namespace HKX2
             new hkpConstraintInstanceSmallArraySerializeOverrideType().Write(s, bw);
             s.WriteStringPointer(bw, m_name);
             bw.WriteUSize(m_userData);
-            s.WriteEmptyPointer(bw);
+            s.WriteVoidPointer(bw);
             bw.WriteUInt32(0); // uid
 
             if (s._header.PointerSize == 8)

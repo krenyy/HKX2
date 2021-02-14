@@ -54,16 +54,16 @@ namespace HKX2
         {
             base.Write(s, bw);
             m_material.Write(s, bw);
-            s.WriteEmptyPointer(bw); // limitContactImpulseUtilAndFlag
+            s.WriteVoidPointer(bw); // limitContactImpulseUtilAndFlag
             bw.WriteSingle(m_damageMultiplier);
-            s.WriteEmptyPointer(bw); // breakableBody
+            s.WriteVoidPointer(bw); // breakableBody
             bw.WriteUInt32(0); // solverData
             bw.WriteUInt16(m_storageIndex);
             bw.WriteUInt16(m_contactPointCallbackDelay);
             new hkpEntitySmallArraySerializeOverrideType().Write(s, bw); // constraintsMaster
-            s.WriteEmptyArray(bw); // constraintsSlave
-            s.WriteEmptyArray(bw); // constraintRuntime
-            s.WriteEmptyPointer(bw); // simulationIsland
+            s.WriteVoidArray(bw); // constraintsSlave
+            s.WriteVoidArray(bw); // constraintRuntime
+            s.WriteVoidPointer(bw); // simulationIsland
             bw.WriteSByte(m_autoRemoveLevel);
             bw.WriteByte(m_numShapeKeysInContactPointProperties);
             bw.WriteByte(m_responseModifierFlags);
@@ -75,7 +75,7 @@ namespace HKX2
             new hkpEntitySmallArraySerializeOverrideType().Write(s, bw); // contactListeners
             new hkpEntitySmallArraySerializeOverrideType().Write(s, bw); // actions
             s.WriteClassPointer(bw, m_localFrame);
-            s.WriteEmptyPointer(bw); // extendedListeners
+            s.WriteVoidPointer(bw); // extendedListeners
             bw.WriteUInt32(m_npData);
             bw.Pad(16);
         }
