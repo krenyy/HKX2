@@ -8,3 +8,4 @@ _ReSharper.Caches/
 UnitTests/Testfiles
 HKX2.sln.DotSettings.user
 NavGen/build
+NavGen/cmake-build-debug
