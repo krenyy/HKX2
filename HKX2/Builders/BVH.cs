@@ -25,6 +25,7 @@ namespace HKX2.Builders
             {
                 return PrimitiveCount;
             }
+
             PrimitiveCount = Left.ComputePrimitiveCounts() + Right.ComputePrimitiveCounts();
             return PrimitiveCount;
         }
@@ -34,16 +35,17 @@ namespace HKX2.Builders
             if (IsLeaf)
             {
                 var s = new HashSet<uint>();
-                s.Add(indices[(int)Primitive * 3]);
-                s.Add(indices[(int)Primitive * 3 + 1]);
-                s.Add(indices[(int)Primitive * 3 + 2]);
+                s.Add(indices[(int) Primitive * 3]);
+                s.Add(indices[(int) Primitive * 3 + 1]);
+                s.Add(indices[(int) Primitive * 3 + 2]);
                 UniqueIndicesCount = 3;
                 return s;
             }
+
             var left = Left.ComputeUniqueIndicesCounts(indices);
             var right = Right.ComputeUniqueIndicesCounts(indices);
             left.UnionWith(right);
-            UniqueIndicesCount = (uint)left.Count;
+            UniqueIndicesCount = (uint) left.Count;
             return left;
         }
 
@@ -69,9 +71,9 @@ namespace HKX2.Builders
             float snorm = 226.0f / (pmax - pmin);
             float rmin = MathF.Sqrt(MathF.Max((min - pmin) * snorm, 0));
             float rmax = MathF.Sqrt(MathF.Max((max - pmax) * -snorm, 0));
-            byte a = (byte)Math.Min(0xF, (int)MathF.Floor(rmin));
-            byte b = (byte)Math.Min(0xF, (int)MathF.Floor(rmax));
-            return (byte)((a << 4) | b);
+            byte a = (byte) Math.Min(0xF, (int) MathF.Floor(rmin));
+            byte b = (byte) Math.Min(0xF, (int) MathF.Floor(rmax));
+            return (byte) ((a << 4) | b);
         }
 
         public List<hkcdStaticTreeCodec3Axis4> BuildAxis4Tree()
@@ -95,7 +97,7 @@ namespace HKX2.Builders
 
                 if (node.IsLeaf)
                 {
-                    compressed.m_data = (byte)(node.Primitive * 2);
+                    compressed.m_data = (byte) (node.Primitive * 2);
                 }
                 else
                 {
@@ -104,7 +106,7 @@ namespace HKX2.Builders
 
                     // Encode the index of the right then add it. The index should
                     // always be even
-                    compressed.m_data = (byte)((ret.Count - currindex) | 0x1);
+                    compressed.m_data = (byte) ((ret.Count - currindex) | 0x1);
 
                     // Now encode the right
                     CompressNode(node.Right, min, max);
@@ -136,9 +138,9 @@ namespace HKX2.Builders
 
                 if (node.IsLeaf)
                 {
-                    ushort data = (ushort)(node.Primitive);
-                    compressed.m_loData = (byte)(data & 0xFF);
-                    compressed.m_hiData = (byte)((data >> 8) & 0x7F);
+                    ushort data = (ushort) (node.Primitive);
+                    compressed.m_loData = (byte) (data & 0xFF);
+                    compressed.m_hiData = (byte) ((data >> 8) & 0x7F);
                 }
                 else
                 {
@@ -147,13 +149,14 @@ namespace HKX2.Builders
 
                     // Encode the index of the right then add it. The index should
                     // always be even
-                    ushort data = (ushort)((ret.Count() - currindex) / 2);
-                    compressed.m_loData = (byte)(data & 0xFF);
-                    compressed.m_hiData = (byte)(((data >> 8) & 0x7F) | 0x80);
+                    ushort data = (ushort) ((ret.Count() - currindex) / 2);
+                    compressed.m_loData = (byte) (data & 0xFF);
+                    compressed.m_hiData = (byte) (((data >> 8) & 0x7F) | 0x80);
 
                     // Now encode the right
                     CompressNode(node.Right, min, max);
                 }
+
                 if (root)
                 {
                     compressed.m_xyz_0 = 0;
@@ -188,8 +191,8 @@ namespace HKX2.Builders
                 if (node.IsLeaf)
                 {
                     uint data = node.Primitive;
-                    compressed.m_loData = (ushort)(data & 0xFFFF);
-                    compressed.m_hiData = (byte)((data >> 16) & 0x7F);
+                    compressed.m_loData = (ushort) (data & 0xFFFF);
+                    compressed.m_hiData = (byte) ((data >> 16) & 0x7F);
                 }
                 else
                 {
@@ -198,13 +201,14 @@ namespace HKX2.Builders
 
                     // Encode the index of the right then add it. The index should
                     // always be even
-                    ushort data = (ushort)((ret.Count - currindex) / 2);
-                    compressed.m_loData = (ushort)(data & 0xFFFF);
-                    compressed.m_hiData = (byte)(((data >> 16) & 0x7F) | 0x80);
+                    ushort data = (ushort) ((ret.Count - currindex) / 2);
+                    compressed.m_loData = (ushort) (data & 0xFFFF);
+                    compressed.m_hiData = (byte) (((data >> 16) & 0x7F) | 0x80);
 
                     // Now encode the right
                     CompressNode(node.Right, min, max);
                 }
+
                 if (root)
                 {
                     compressed.m_xyz_0 = 0;
