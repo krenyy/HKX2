@@ -76,5 +76,7 @@ namespace HKX2.Builders.Extensions
 
             return root;
         }
+
+        public static hkAabb GetDomain(this hkpBvCompressedMeshShape _this) => _this.m_tree.m_domain;
     }
 }
