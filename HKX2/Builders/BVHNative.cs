@@ -14,7 +14,7 @@ namespace HKX2.Builders
         public readonly float maxZ;
         public readonly uint primitiveCount;
         public readonly uint firstChildOrPrimitive;
-        
+
         public bool isLeaf => primitiveCount > 0;
     }
 
@@ -22,7 +22,7 @@ namespace HKX2.Builders
     {
         [DllImport("libNavGen")]
         public static extern bool BuildBVHForDomains([In] Vector3[] domains, int domainCount);
-        
+
         [DllImport("libNavGen")]
         public static extern bool BuildBVHForMesh([In] Vector3[] vertices, [In] uint[] indices, int icount);
 

@@ -9,8 +9,8 @@ namespace HKX2
 {
     public class BinaryReaderEx
     {
-        private BinaryReader br;
-        private Stack<long> steps;
+        private readonly BinaryReader br;
+        private readonly Stack<long> steps;
 
         public bool BigEndian { get; set; }
 

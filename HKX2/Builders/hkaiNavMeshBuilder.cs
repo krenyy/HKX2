@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -18,15 +19,16 @@ namespace HKX2.Builders
 
             public static BuildParams Default()
             {
-                var ret = new BuildParams();
-                ret.CellSize = 0.3f;
-                ret.CellHeight = 0.3f;
-                ret.WalkableSlopeAngle = 30.0f;
-                ret.WalkableHeight = 2.0f;
-                ret.WalkableClimb = 1.0f;
-                ret.WalkableRadius = 0.5f;
-                ret.MinRegionArea = 3;
-                return ret;
+                return new BuildParams
+                {
+                    CellSize = 0.3f,
+                    CellHeight = 0.3f,
+                    WalkableSlopeAngle = 30.0f,
+                    WalkableHeight = 2.0f,
+                    WalkableClimb = 1.0f,
+                    WalkableRadius = 0.5f,
+                    MinRegionArea = 3
+                };
             }
         }
 
@@ -42,70 +44,79 @@ namespace HKX2.Builders
                 verts.ToArray(), verts.Count, indices.ToArray(), indices.Count);
             if (!buildSuccess)
             {
-                return null;
+                throw new Exception("Couldn't build Navmesh!");
             }
 
             var vcount = NavMeshNative.GetMeshVertCount();
             var icount = NavMeshNative.GetMeshTriCount();
             if (vcount == 0 || icount == 0)
             {
-                return null;
+                throw new Exception("Resulting Navmesh is empty!");
             }
 
-            ushort[] bverts = new ushort[vcount * 3];
-            ushort[] bindices = new ushort[icount * 3 * 2];
-            Vector3[] vbverts = new Vector3[vcount];
+            var bverts = new ushort[vcount * 3];
+            var bindices = new ushort[icount * 3 * 2];
+            var vbverts = new Vector3[vcount];
             NavMeshNative.GetMeshVerts(bverts);
             NavMeshNative.GetMeshTris(bindices);
 
-            Vector3[] bounds = new Vector3[2];
+            var bounds = new Vector3[2];
             NavMeshNative.GetBoundingBox(bounds);
 
-            var nmesh = new hkaiNavMesh();
-            nmesh.m_aabb = new hkAabb();
-            nmesh.m_aabb.m_min = new Vector4(bounds[0].X, bounds[0].Y, bounds[0].Z, 1.0f);
-            nmesh.m_aabb.m_max = new Vector4(bounds[1].X, bounds[1].Y, bounds[1].Z, 1.0f);
+            var nmesh = new hkaiNavMesh
+            {
+                m_faces = new List<hkaiNavMeshFace>(),
+                m_edges = new List<hkaiNavMeshEdge>(),
+                m_vertices = new List<Vector4>(),
+                m_streamingSets = new List<hkaiStreamingSet>(),
+                m_faceData = new List<int>(),
+                m_edgeData = new List<int>(),
+                m_faceDataStriding = 1,
+                m_edgeDataStriding = 1,
+                m_flags = NavMeshFlagBits.MESH_NONE,
+                m_aabb = new hkAabb
+                {
+                    m_min = new Vector4(bounds[0].X, bounds[0].Y, bounds[0].Z, 1.0f),
+                    m_max = new Vector4(bounds[1].X, bounds[1].Y, bounds[1].Z, 1.0f)
+                },
+                m_erosionRadius = 0.0f,
+                m_userData = 0
+            };
 
-            nmesh.m_edgeData = new List<int>();
-            nmesh.m_edgeDataStriding = 1;
-            nmesh.m_edges = new List<hkaiNavMeshEdge>();
-            nmesh.m_erosionRadius = 0.0f;
-            nmesh.m_faceData = new List<int>();
-            nmesh.m_faceDataStriding = 1;
-            nmesh.m_faces = new List<hkaiNavMeshFace>();
-            nmesh.m_flags = 0;
-            nmesh.m_vertices = new List<Vector4>();
-
-            for (int i = 0; i < bverts.Length/3; i++)
+            for (var i = 0; i < bverts.Length / 3; i++)
             {
                 var vx = bverts[i * 3];
                 var vy = bverts[i * 3 + 1];
                 var vz = bverts[i * 3 + 2];
 
                 var vert = new Vector3(bounds[0].X + vx * p.CellSize,
-                                       bounds[0].Y + vy * p.CellHeight,
-                                       bounds[0].Z + vz * p.CellSize);
+                    bounds[0].Y + vy * p.CellHeight,
+                    bounds[0].Z + vz * p.CellSize);
                 nmesh.m_vertices.Add(new Vector4(vert.X, vert.Y, vert.Z, 1.0f));
                 vbverts[i] = vert;
             }
 
-            for (int t = 0; t < bindices.Length/2; t += 3)
+            for (var t = 0; t < bindices.Length / 2; t += 3)
             {
-                var f = new hkaiNavMeshFace();
-                f.m_clusterIndex = 0;
-                f.m_numEdges = 3;
-                f.m_startEdgeIndex = nmesh.m_edges.Count;
-                f.m_startUserEdgeIndex = -1;
-                f.m_padding = 0xCDCD;
-                nmesh.m_faces.Add(f);
+                nmesh.m_faces.Add(
+                    new hkaiNavMeshFace
+                    {
+                        m_clusterIndex = 0,
+                        m_numEdges = 3,
+                        m_startEdgeIndex = nmesh.m_edges.Count,
+                        m_startUserEdgeIndex = -1,
+                        m_padding = 0xCDCD
+                    });
                 nmesh.m_faceData.Add(0);
 
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
-                    var e = new hkaiNavMeshEdge();
-                    e.m_a = bindices[t * 2 + i];
-                    e.m_b = bindices[t * 2 + ((i + 1) % 3)];
-                    e.m_flags = EdgeFlagBits.EDGE_ORIGINAL;
+                    var e = new hkaiNavMeshEdge
+                    {
+                        m_a = bindices[t * 2 + i],
+                        m_b = bindices[t * 2 + ((i + 1) % 3)],
+                        m_flags = EdgeFlagBits.EDGE_ORIGINAL
+                    };
                     // Record adjacency
                     if (bindices[t * 2 + 3 + i] == 0xFFFF)
                     {
@@ -117,105 +128,115 @@ namespace HKX2.Builders
                     {
                         e.m_oppositeFace = bindices[t * 2 + 3 + i];
                         // Find the edge that has this face as an adjacency
-                        for (int j = 0; j < 3; j++)
+                        for (var j = 0; j < 3; j++)
                         {
                             var edge = bindices[t * 2 + 3 + i] * 6 + 3 + j;
                             if (bindices[edge] == (t / 3))
                             {
-                                e.m_oppositeEdge = (uint)bindices[t * 2 + 3 + i] * 3 + (uint)j;
+                                e.m_oppositeEdge = (uint) bindices[t * 2 + 3 + i] * 3 + (uint) j;
                             }
                         }
                     }
+
                     nmesh.m_edges.Add(e);
                     nmesh.m_edgeData.Add(0);
                 }
             }
 
-            var namedVariant01 = new hkRootLevelContainerNamedVariant();
-            namedVariant01.m_className = "hkaiNavMesh";
-            namedVariant01.m_name = "00/000,+0000,+0000,+0000//NavMesh";
-            namedVariant01.m_variant = nmesh;
+            var namedVariant01 = new hkRootLevelContainerNamedVariant
+            {
+                m_className = "hkaiNavMesh",
+                m_name = "00/000,+0000,+0000,+0000//NavMesh",
+                m_variant = nmesh
+            };
 
             // Next step: build a bvh
             var shortIndices = new ushort[bindices.Length / 2];
-            for (int i = 0; i < bindices.Length / 2; i += 3)
+            for (var i = 0; i < bindices.Length / 2; i += 3)
             {
                 shortIndices[i] = bindices[i * 2];
                 shortIndices[i + 1] = bindices[i * 2 + 1];
                 shortIndices[i + 2] = bindices[i * 2 + 2];
             }
-            bool didbuild = BVHNative.BuildBVHForMesh(vbverts, shortIndices.Select(arg => (uint) arg).ToArray(), shortIndices.Length);
+
+            var didbuild = BVHNative.BuildBVHForMesh(vbverts, shortIndices.Select(arg => (uint) arg).ToArray(),
+                shortIndices.Length);
             if (!didbuild)
             {
                 return null;
             }
 
             var nodecount = BVHNative.GetBVHSize();
-            var nsize = BVHNative.GetNodeSize();
             var nodes = new NativeBVHNode[nodecount];
             BVHNative.GetBVHNodes(nodes);
 
             // Rebuild in friendlier tree form
-            List<BVNode> bnodes = new List<BVNode>((int)nodecount);
-            foreach (var n in nodes)
+            var bnodes = nodes.Select(n => new BVNode
             {
-                var bnode = new BVNode();
-                bnode.Min = new Vector3(n.minX, n.minY, n.minZ);
-                bnode.Max = new Vector3(n.maxX, n.maxY, n.maxZ);
-                bnode.IsLeaf = n.isLeaf;
-                bnode.PrimitiveCount = n.primitiveCount;
-                bnode.Primitive = n.firstChildOrPrimitive;
-                bnodes.Add(bnode);
-            }
-            for (int i = 0; i < nodes.Length; i++)
+                Min = new Vector3(n.minX, n.minY, n.minZ),
+                Max = new Vector3(n.maxX, n.maxY, n.maxZ),
+                IsLeaf = n.isLeaf,
+                PrimitiveCount = n.primitiveCount,
+                Primitive = n.firstChildOrPrimitive
+            }).ToList();
+
+            for (var i = 0; i < nodes.Length; i++)
             {
-                if (!nodes[i].isLeaf)
-                {
-                    bnodes[i].Left = bnodes[(int)nodes[i].firstChildOrPrimitive];
-                    bnodes[i].Right = bnodes[(int)nodes[i].firstChildOrPrimitive + 1];
-                }
+                if (nodes[i].isLeaf) continue;
+                bnodes[i].Left = bnodes[(int) nodes[i].firstChildOrPrimitive];
+                bnodes[i].Right = bnodes[(int) nodes[i].firstChildOrPrimitive + 1];
             }
-            
-            var tree = new hkcdStaticAabbTree();
-            tree.m_treePtr = new hkcdStaticTreeDefaultTreeStorage6();
-            tree.m_treePtr.m_nodes = bnodes[0].BuildAxis6Tree();
+
             var min = bnodes[0].Min;
             var max = bnodes[0].Max;
-            tree.m_treePtr.m_domain = new hkAabb();
-            tree.m_treePtr.m_domain.m_min = new Vector4(min.X, min.Y, min.Z, 1.0f);
-            tree.m_treePtr.m_domain.m_max = new Vector4(max.X, max.Y, max.Z, 1.0f);
+            var tree = new hkcdStaticAabbTree
+            {
+                m_treePtr = new hkcdStaticTreeDefaultTreeStorage6
+                {
+                    m_nodes = bnodes[0].BuildAxis6Tree(),
+                    m_domain = new hkAabb
+                    {
+                        m_min = new Vector4(min.X, min.Y, min.Z, 1.0f),
+                        m_max = new Vector4(max.X, max.Y, max.Z, 1.0f)
+                    }
+                }
+            };
 
             // Build a dummy directed graph
-            var namedVariant02 = new hkRootLevelContainerNamedVariant();
-            namedVariant02.m_className = "hkaiDirectedGraphExplicitCost";
-            namedVariant02.m_name = "00/000,+0000,+0000,+0000//ClusterGraph";
-            var graph = new hkaiDirectedGraphExplicitCost();
-            namedVariant02.m_variant = graph;
-
-            graph.m_nodes = new List<hkaiDirectedGraphExplicitCostNode>();
-            var node = new hkaiDirectedGraphExplicitCostNode();
-            node.m_numEdges = 0;
-            node.m_startEdgeIndex = 0;
-            graph.m_nodes.Add(node);
-
-            graph.m_positions = new List<Vector4>();
             var c = (max - min) / 2;
-            graph.m_positions.Add(new Vector4(c.X, c.Y, c.Z, 1.0f));
+            var namedVariant02 = new hkRootLevelContainerNamedVariant
+            {
+                m_className = "hkaiDirectedGraphExplicitCost",
+                m_name = "00/000,+0000,+0000,+0000//ClusterGraph",
+                m_variant = new hkaiDirectedGraphExplicitCost
+                {
+                    m_positions = new List<Vector4> {new Vector4(c.X, c.Y, c.Z, 1.0f)},
+                    m_nodes = new List<hkaiDirectedGraphExplicitCostNode>
+                    {
+                        new hkaiDirectedGraphExplicitCostNode {m_numEdges = 0, m_startEdgeIndex = 0}
+                    },
+                    m_edges = new List<hkaiDirectedGraphExplicitCostEdge>(),
+                    m_nodeData = new List<uint>(),
+                    m_edgeData = new List<uint>(),
+                    m_nodeDataStriding = 0,
+                    m_edgeDataStriding = 0,
+                    m_streamingSets = new List<hkaiStreamingSet>()
+                }
+            };
 
             // Query Mediator
-            var namedVariant03 = new hkRootLevelContainerNamedVariant();
-            namedVariant03.m_className = "hkaiStaticTreeNavMeshQueryMediator";
-            namedVariant03.m_name = "00/000,+0000,+0000,+0000//QueryMediator";
-            var queryMediator = new hkaiStaticTreeNavMeshQueryMediator();
-            queryMediator.m_tree = tree;
-            queryMediator.m_navMesh = nmesh;
-            namedVariant03.m_variant = queryMediator;
+            var namedVariant03 = new hkRootLevelContainerNamedVariant
+            {
+                m_className = "hkaiStaticTreeNavMeshQueryMediator",
+                m_name = "00/000,+0000,+0000,+0000//QueryMediator",
+                m_variant = new hkaiStaticTreeNavMeshQueryMediator {m_tree = tree, m_navMesh = nmesh}
+            };
 
-            root.m_namedVariants = new List<hkRootLevelContainerNamedVariant>();
-            root.m_namedVariants.Add(namedVariant01);
-            root.m_namedVariants.Add(namedVariant02);
-            root.m_namedVariants.Add(namedVariant03);
-            
+            root.m_namedVariants = new List<hkRootLevelContainerNamedVariant>
+            {
+                namedVariant01, namedVariant02, namedVariant03
+            };
+
             return root;
         }
     }

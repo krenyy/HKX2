@@ -84,9 +84,9 @@ namespace HKX2
                 _br.AssertUInt32(size | ((uint) 0x80 << 24)); // Capacity and flags
 
                 var res = new List<T>();
-                
+
                 if (size <= 0) return res;
-                
+
                 _br.StepIn(f.Dst);
                 for (var i = 0; i < size; i++)
                 {

@@ -8,15 +8,15 @@ namespace HKX2
 {
     public class BinaryWriterEx
     {
-        private BinaryWriter bw;
-        private Stack<long> steps;
-        private Dictionary<string, long> reservations;
+        private readonly BinaryWriter bw;
+        private readonly Stack<long> steps;
+        private readonly Dictionary<string, long> reservations;
 
         public bool BigEndian { get; set; }
 
-        public bool USizeLong { get; }
+        private bool USizeLong { get; }
 
-        public Stream Stream { get; }
+        private Stream Stream { get; }
 
         public long Position
         {

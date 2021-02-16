@@ -8,7 +8,7 @@ namespace Tests
 {
     public class TestBase
     {
-        protected static string[] GetNxFilePathsByExtension(string extension)
+        private static string[] GetNxFilePathsByExtension(string extension)
         {
             var rootPath =
                 Path.GetFullPath(Path.Combine(

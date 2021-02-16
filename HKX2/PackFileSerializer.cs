@@ -76,7 +76,7 @@ namespace HKX2
                     perElement.Invoke(item);
                 }
 
-                PopLocalWriteQueue(bw);
+                PopLocalWriteQueue();
             });
             if (pad)
             {
@@ -114,7 +114,7 @@ namespace HKX2
                 _pendingGlobals.Add(d, new List<uint>());
                 PushSerializationQueue();
                 _serializationQueues[_currentSerializationQueue].Enqueue(d);
-                PopSerializationQueue(bw);
+                PopSerializationQueue();
                 _pendingVirtuals.Add(d);
             }
 
@@ -365,13 +365,8 @@ namespace HKX2
             }
         }
 
-        private void PopLocalWriteQueue(BinaryWriterEx bw)
+        private void PopLocalWriteQueue()
         {
-            // Enqueue a padding operation
-            /*_localWriteQueues[_currentLocalWriteQueue].Enqueue(() =>
-            {
-                bw.Pad(16);
-            });*/
             _currentLocalWriteQueue--;
         }
 
@@ -384,13 +379,8 @@ namespace HKX2
             }
         }
 
-        private void PopSerializationQueue(BinaryWriterEx bw)
+        private void PopSerializationQueue()
         {
-            // Enqueue a padding operation
-            /*_localWriteQueues[_currWriteQueue].Enqueue(() =>
-            {
-                bw.Pad(16);
-            });*/
             _currentSerializationQueue--;
         }
 

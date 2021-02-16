@@ -27,10 +27,12 @@ namespace HKX2.Builders.Extensions
         private static BVHNode BuildBvhTree(this hkpBvCompressedMeshShape _this, Vector3 parentBBMin,
             Vector3 parentBBMax, uint nodeIndex)
         {
-            BVHNode node = new BVHNode();
             var cnode = _this.m_tree.m_nodes[(int) nodeIndex];
-            node.Min = cnode.DecompressMin(parentBBMin, parentBBMax);
-            node.Max = cnode.DecompressMax(parentBBMin, parentBBMax);
+            var node = new BVHNode
+            {
+                Min = cnode.DecompressMin(parentBBMin, parentBBMax),
+                Max = cnode.DecompressMax(parentBBMin, parentBBMax)
+            };
 
             if ((cnode.m_hiData & 0x80) > 0)
             {
@@ -55,11 +57,13 @@ namespace HKX2.Builders.Extensions
                 return null;
             }
 
-            BVHNode root = new BVHNode();
-            root.Min = new Vector3(_this.m_tree.m_domain.m_min.X, _this.m_tree.m_domain.m_min.Y,
-                _this.m_tree.m_domain.m_min.Z);
-            root.Max = new Vector3(_this.m_tree.m_domain.m_max.X, _this.m_tree.m_domain.m_max.Y,
-                _this.m_tree.m_domain.m_max.Z);
+            var root = new BVHNode
+            {
+                Min = new Vector3(_this.m_tree.m_domain.m_min.X, _this.m_tree.m_domain.m_min.Y,
+                    _this.m_tree.m_domain.m_min.Z),
+                Max = new Vector3(_this.m_tree.m_domain.m_max.X, _this.m_tree.m_domain.m_max.Y,
+                    _this.m_tree.m_domain.m_max.Z)
+            };
 
             var cnode = _this.m_tree.m_nodes[0];
             if ((cnode.m_hiData & 0x80) > 0)

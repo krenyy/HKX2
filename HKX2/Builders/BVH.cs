@@ -15,7 +15,7 @@ namespace HKX2.Builders
         public Vector3 Min;
         public Vector3 Max;
         public uint PrimitiveCount;
-        public uint UniqueIndicesCount;
+        private uint UniqueIndicesCount;
 
         public bool IsSectionHead;
 
@@ -34,10 +34,12 @@ namespace HKX2.Builders
         {
             if (IsLeaf)
             {
-                var s = new HashSet<uint>();
-                s.Add(indices[(int) Primitive * 3]);
-                s.Add(indices[(int) Primitive * 3 + 1]);
-                s.Add(indices[(int) Primitive * 3 + 2]);
+                var s = new HashSet<uint>
+                {
+                    indices[(int) Primitive * 3],
+                    indices[(int) Primitive * 3 + 1],
+                    indices[(int) Primitive * 3 + 2]
+                };
                 UniqueIndicesCount = 3;
                 return s;
             }
@@ -56,14 +58,12 @@ namespace HKX2.Builders
         public void AttemptSectionSplit()
         {
             // Very simple primitive count based splitting heuristic for now
-            if (!IsLeaf && (PrimitiveCount > 127 || UniqueIndicesCount > 255))
-            {
-                IsSectionHead = false;
-                Left.IsSectionHead = true;
-                Right.IsSectionHead = true;
-                Left.AttemptSectionSplit();
-                Right.AttemptSectionSplit();
-            }
+            if (IsLeaf || PrimitiveCount <= 127 && UniqueIndicesCount <= 255) return;
+            IsSectionHead = false;
+            Left.IsSectionHead = true;
+            Right.IsSectionHead = true;
+            Left.AttemptSectionSplit();
+            Right.AttemptSectionSplit();
         }
 
         private static byte CompressDim(float min, float max, float pmin, float pmax)
