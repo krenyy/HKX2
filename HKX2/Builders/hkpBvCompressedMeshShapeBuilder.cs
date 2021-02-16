@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace HKX2.Builders
 {
-    public class hkpBvCompressedMeshShapeBuilder
+    public static class hkpBvCompressedMeshShapeBuilder
     {
         private class CollisionSection
         {
@@ -15,17 +15,17 @@ namespace HKX2.Builders
 
             public List<Tuple<ushort, ushort>> PrimitiveInfos;
 
-            public void GatherSectionIndices(List<uint> indices, List<Tuple<ushort, ushort>> primitiveInfos)
+            public void GatherSectionIndices(IReadOnlyList<uint> indices,
+                IReadOnlyList<Tuple<ushort, ushort>> primitiveInfos)
             {
                 Indices = new List<uint>();
                 UsedIndices = new HashSet<uint>();
 
                 PrimitiveInfos = new List<Tuple<ushort, ushort>>();
 
-                Stack<BVNode> tstack = new Stack<BVNode>();
+                var tstack = new Stack<BVNode>();
                 tstack.Push(SectionHead);
-                BVNode n;
-                while (tstack.TryPop(out n))
+                while (tstack.TryPop(out var n))
                 {
                     if (n.IsLeaf)
                     {
@@ -50,31 +50,31 @@ namespace HKX2.Builders
 
         private static Vector3 DecompressSharedVertex(ulong vertex, Vector4 bbMin, Vector4 bbMax)
         {
-            float scaleX = (bbMax.X - bbMin.X) / ((1 << 21) - 1);
-            float scaleY = (bbMax.Y - bbMin.Y) / ((1 << 21) - 1);
-            float scaleZ = (bbMax.Z - bbMin.Z) / ((1 << 22) - 1);
-            float x = (vertex & 0x1FFFFF) * scaleX + bbMin.X;
-            float y = ((vertex >> 21) & 0x1FFFFF) * scaleY + bbMin.Y;
-            float z = ((vertex >> 42) & 0x3FFFFF) * scaleZ + bbMin.Z;
+            var scaleX = (bbMax.X - bbMin.X) / ((1 << 21) - 1);
+            var scaleY = (bbMax.Y - bbMin.Y) / ((1 << 21) - 1);
+            var scaleZ = (bbMax.Z - bbMin.Z) / ((1 << 22) - 1);
+            var x = (vertex & 0x1FFFFF) * scaleX + bbMin.X;
+            var y = ((vertex >> 21) & 0x1FFFFF) * scaleY + bbMin.Y;
+            var z = ((vertex >> 42) & 0x3FFFFF) * scaleZ + bbMin.Z;
             return new Vector3(x, y, z);
         }
 
         private static Vector3 DecompressPackedVertex(uint vertex, Vector3 scale, Vector3 offset)
         {
-            float x = (vertex & 0x7FF) * scale.X + offset.X;
-            float y = ((vertex >> 11) & 0x7FF) * scale.Y + offset.Y;
-            float z = ((vertex >> 22) & 0x3FF) * scale.Z + offset.Z;
+            var x = (vertex & 0x7FF) * scale.X + offset.X;
+            var y = ((vertex >> 11) & 0x7FF) * scale.Y + offset.Y;
+            var z = ((vertex >> 22) & 0x3FF) * scale.Z + offset.Z;
             return new Vector3(x, y, z);
         }
 
         private static ulong CompressSharedVertex(Vector3 vert, Vector3 min, Vector3 max)
         {
-            float scaleX = (max.X - min.X) / ((1 << 21) - 1);
-            float scaleY = (max.Y - min.Y) / ((1 << 21) - 1);
-            float scaleZ = (max.Z - min.Z) / ((1 << 22) - 1);
-            ulong x = (ulong) ((vert.X - min.X) / scaleX);
-            ulong y = (ulong) ((vert.Y - min.Y) / scaleY);
-            ulong z = (ulong) ((vert.Z - min.Z) / scaleZ);
+            var scaleX = (max.X - min.X) / ((1 << 21) - 1);
+            var scaleY = (max.Y - min.Y) / ((1 << 21) - 1);
+            var scaleZ = (max.Z - min.Z) / ((1 << 22) - 1);
+            var x = (ulong) ((vert.X - min.X) / scaleX);
+            var y = (ulong) ((vert.Y - min.Y) / scaleY);
+            var z = (ulong) ((vert.Z - min.Z) / scaleZ);
             return (x & 0x1FFFFF) | ((y & 0x1FFFFF) << 21) | ((z & 0x3FFFFF) << 42);
         }
 
@@ -89,69 +89,39 @@ namespace HKX2.Builders
         private static int GetBitLength(int n) => n == 0 ? 0 : Convert.ToString(n, 2).Length;
 
         public static hkpBvCompressedMeshShape Build(List<Vector3> verts, List<uint> indices,
-            List<Tuple<uint, uint>> primitiveInfos)
+            IEnumerable<Tuple<uint, uint>> primitiveInfos)
         {
-            #region hkpBvCompressedMeshShape
-
-            hkpBvCompressedMeshShape shape = new hkpBvCompressedMeshShape();
-            shape.m_dispatchType = ShapeDispatchTypeEnum.USER;
-            shape.m_bitsPerKey = 0;
-            shape.m_shapeInfoCodecType = 0;
-            shape.m_userData = 0;
-            shape.m_bvTreeType = BvTreeType.BVTREE_COMPRESSED_MESH;
-            shape.m_convexRadius = .0f;
-            shape.m_weldingType = WeldingType.WELDING_TYPE_ANTICLOCKWISE;
-            shape.m_hasPerPrimitiveUserData = true;
-            shape.m_hasPerPrimitiveCollisionFilterInfo = true;
-            shape.m_collisionFilterInfoPalette = new List<uint>();
-            shape.m_userDataPalette = new List<uint>();
-            shape.m_userStringPalette = new List<string> {"A lonely compressed mesh"};
-            shape.m_tree = new hkpBvCompressedMeshShapeTree();
-            shape.m_tree.m_nodes = new List<hkcdStaticTreeCodec3Axis5>();
-            shape.m_tree.m_domain = new hkAabb();
-            shape.m_tree.m_sections = new List<hkcdStaticMeshTreeBaseSection>();
-            shape.m_tree.m_primitives = new List<hkcdStaticMeshTreeBasePrimitive>();
-            shape.m_tree.m_sharedVerticesIndex = new List<ushort>();
-            shape.m_tree.m_packedVertices = new List<uint>();
-            shape.m_tree.m_sharedVertices = new List<ulong>();
-            shape.m_tree.m_primitiveDataRuns = new List<hkpBvCompressedMeshShapeTreeDataRun>();
-
-            #endregion
+            var shape = new hkpBvCompressedMeshShape
+            {
+                m_dispatchType = ShapeDispatchTypeEnum.USER,
+                m_bitsPerKey = 0,
+                m_shapeInfoCodecType = 0,
+                m_userData = 0,
+                m_bvTreeType = BvTreeType.BVTREE_COMPRESSED_MESH,
+                m_convexRadius = .0f,
+                m_weldingType = WeldingType.WELDING_TYPE_ANTICLOCKWISE,
+                m_hasPerPrimitiveUserData = true,
+                m_hasPerPrimitiveCollisionFilterInfo = true,
+                m_collisionFilterInfoPalette = new List<uint>(),
+                m_userDataPalette = new List<uint>(),
+                m_userStringPalette = new List<string> {"A lonely compressed mesh"},
+                m_tree = new hkpBvCompressedMeshShapeTree
+                {
+                    m_nodes = new List<hkcdStaticTreeCodec3Axis5>(),
+                    m_domain = new hkAabb(),
+                    m_sections = new List<hkcdStaticMeshTreeBaseSection>(),
+                    m_primitives = new List<hkcdStaticMeshTreeBasePrimitive>(),
+                    m_sharedVerticesIndex = new List<ushort>(),
+                    m_packedVertices = new List<uint>(),
+                    m_sharedVertices = new List<ulong>(),
+                    m_primitiveDataRuns = new List<hkpBvCompressedMeshShapeTreeDataRun>()
+                }
+            };
 
             // Try and build the BVH for the mesh
             var bv = verts.ToArray();
             var bi = indices.ToArray();
-
-            bool didbuild = BVHNative.BuildBVHForMesh(bv, bi, bi.Length);
-            if (!didbuild) throw new Exception();
-
-            var nodecount = BVHNative.GetBVHSize();
-            var nsize = BVHNative.GetNodeSize();
-            var nodes = new NativeBVHNode[nodecount];
-
-            BVHNative.GetBVHNodes(nodes);
-
-            // Rebuild in friendlier tree form
-            List<BVNode> bnodes = new List<BVNode>((int) nodecount);
-            foreach (var n in nodes)
-            {
-                var bnode = new BVNode();
-                bnode.Min = new Vector3(n.minX, n.minY, n.minZ);
-                bnode.Max = new Vector3(n.maxX, n.maxY, n.maxZ);
-                bnode.IsLeaf = n.isLeaf;
-                bnode.PrimitiveCount = n.primitiveCount;
-                bnode.Primitive = n.firstChildOrPrimitive;
-                bnodes.Add(bnode);
-            }
-
-            foreach (var n in bnodes)
-            {
-                if (!n.IsLeaf)
-                {
-                    n.Left = bnodes[(int) n.Primitive];
-                    n.Right = bnodes[(int) n.Primitive + 1];
-                }
-            }
+            var bnodes = BVNode.BuildBVHForMesh(bv, bi, bi.Length);
 
             // Split the mesh into sections using the BVH and primitive counts as
             // guidence
@@ -162,64 +132,57 @@ namespace HKX2.Builders
 
             // Take out the section heads and replace them with new leafs that reference
             // the new section
-            List<BVNode> sectionBVHs = new List<BVNode>();
-            foreach (var node in bnodes)
+            var sectionBVHs = new List<BVNode>();
+            foreach (var node in bnodes.Where(node => node.IsSectionHead))
             {
-                if (node.IsSectionHead)
+                sectionBVHs.Add(new BVNode
                 {
-                    var secnode = new BVNode();
-                    secnode.Min = node.Min;
-                    secnode.Max = node.Max;
-                    secnode.PrimitiveCount = node.PrimitiveCount;
-                    secnode.Left = node.Left;
-                    secnode.Right = node.Right;
-                    secnode.IsLeaf = node.IsLeaf;
-                    node.Left = null;
-                    node.Right = null;
-                    node.IsLeaf = true;
-                    node.Primitive = (uint) sectionBVHs.Count;
-                    sectionBVHs.Add(secnode);
-                }
+                    Min = node.Min,
+                    Max = node.Max,
+                    PrimitiveCount = node.PrimitiveCount,
+                    Left = node.Left,
+                    Right = node.Right,
+                    IsLeaf = node.IsLeaf
+                });
+                node.Left = null;
+                node.Right = null;
+                node.IsLeaf = true;
+                node.Primitive = (uint) sectionBVHs.Count;
             }
 
             var primitiveInfoIndices = new List<Tuple<ushort, ushort>>();
-            foreach (var primitiveInfo in primitiveInfos)
+            foreach (var (cfi, ud) in primitiveInfos)
             {
-                var cfiIndex = shape.m_collisionFilterInfoPalette.IndexOf(primitiveInfo.Item1);
-                var udIndex = shape.m_userDataPalette.IndexOf(primitiveInfo.Item2);
+                var cfiIndex = shape.m_collisionFilterInfoPalette.IndexOf(cfi);
+                var udIndex = shape.m_userDataPalette.IndexOf(ud);
 
                 if (cfiIndex == -1)
                 {
                     cfiIndex = shape.m_collisionFilterInfoPalette.Count;
-                    shape.m_collisionFilterInfoPalette.Add(primitiveInfo.Item1);
+                    shape.m_collisionFilterInfoPalette.Add(cfi);
                 }
 
                 if (udIndex == -1)
                 {
                     udIndex = shape.m_userDataPalette.Count;
-                    shape.m_userDataPalette.Add(primitiveInfo.Item2);
+                    shape.m_userDataPalette.Add(ud);
                 }
 
                 primitiveInfoIndices.Add(new Tuple<ushort, ushort>((ushort) cfiIndex, (ushort) udIndex));
             }
 
-            List<CollisionSection> sections = new List<CollisionSection>();
-            foreach (var b in sectionBVHs)
+            var sections = new List<CollisionSection>();
+            foreach (var s in sectionBVHs.Select(b => new CollisionSection {SectionHead = b}))
             {
-                var s = new CollisionSection();
-                s.SectionHead = b;
                 s.GatherSectionIndices(indices, primitiveInfoIndices);
                 sections.Add(s);
             }
 
             // Count all the indices across sections to figure out what vertices need to be shared
-            byte[] indicescount = new byte[indices.Count];
-            foreach (var s in sections)
+            var indicescount = new byte[indices.Count];
+            foreach (var v in sections.SelectMany(s => s.UsedIndices))
             {
-                foreach (var v in s.UsedIndices)
-                {
-                    indicescount[v]++;
-                }
+                indicescount[v]++;
             }
 
             var shared = new HashSet<uint>();
@@ -264,61 +227,63 @@ namespace HKX2.Builders
                 sec.m_codecParms_3 = scale.X;
                 sec.m_codecParms_4 = scale.Y;
                 sec.m_codecParms_5 = scale.Z;
-                sec.m_domain = new hkAabb();
-                sec.m_domain.m_min = new Vector4(s.SectionHead.Min.X, s.SectionHead.Min.Y, s.SectionHead.Min.Z, 1f);
-                sec.m_domain.m_max = new Vector4(s.SectionHead.Max.X, s.SectionHead.Max.Y, s.SectionHead.Max.Z, 1f);
+                sec.m_domain = new hkAabb
+                {
+                    m_min = new Vector4(s.SectionHead.Min.X, s.SectionHead.Min.Y, s.SectionHead.Min.Z, 1f),
+                    m_max = new Vector4(s.SectionHead.Max.X, s.SectionHead.Max.Y, s.SectionHead.Max.Z, 1f)
+                };
 
                 // Map the indices to either shared/packed verts and pack verts that need packing
                 var packedIndicesRemap = new Dictionary<uint, byte>();
                 byte idxcounter = 0;
                 foreach (var idx in s.UsedIndices.OrderBy(x => x))
                 {
-                    if (!shared.Contains(idx))
-                    {
-                        packedIndicesRemap.Add(idx, idxcounter);
-                        var vert = verts[(int) idx];
-                        tree.m_packedVertices.Add(CompressPackedVertex(vert, scale, offset));
-                        idxcounter++;
-                    }
+                    if (shared.Contains(idx)) continue;
+                    packedIndicesRemap.Add(idx, idxcounter);
+                    var vert = verts[(int) idx];
+                    tree.m_packedVertices.Add(CompressPackedVertex(vert, scale, offset));
+                    idxcounter++;
                 }
 
                 var sharedstart = idxcounter;
                 idxcounter = 0;
                 foreach (var idx in s.UsedIndices.OrderBy(x => x))
                 {
-                    if (shared.Contains(idx))
-                    {
-                        packedIndicesRemap.Add(idx, (byte) (idxcounter + sharedstart));
-                        tree.m_sharedVerticesIndex.Add((ushort) sharedIndexRemapTable[idx]);
-                        idxcounter++;
-                    }
+                    if (!shared.Contains(idx)) continue;
+                    packedIndicesRemap.Add(idx, (byte) (idxcounter + sharedstart));
+                    tree.m_sharedVerticesIndex.Add((ushort) sharedIndexRemapTable[idx]);
+                    idxcounter++;
                 }
 
                 sec.m_firstPackedVertex = (uint) packedvertbase;
                 sec.m_numSharedIndices = idxcounter;
                 sec.m_numPackedVertices = sharedstart;
-                sec.m_sharedVertices = new hkcdStaticMeshTreeBaseSectionSharedVertices();
-                sec.m_sharedVertices.m_data = ((uint) sharedstart & 0xFF) | ((uint) sharedindexbase << 8);
+                sec.m_sharedVertices = new hkcdStaticMeshTreeBaseSectionSharedVertices
+                {
+                    m_data = ((uint) sharedstart & 0xFF) | ((uint) sharedindexbase << 8)
+                };
 
                 uint dataRunCount = 0;
                 for (byte i = 0; i < s.Indices.Count / 3; i++)
                 {
                     // Pack primitive
-                    var p = new hkcdStaticMeshTreeBasePrimitive();
-                    p.m_indices_0 = packedIndicesRemap[s.Indices[i * 3]];
-                    p.m_indices_1 = packedIndicesRemap[s.Indices[i * 3 + 1]];
-                    p.m_indices_2 = packedIndicesRemap[s.Indices[i * 3 + 2]];
-                    p.m_indices_3 = p.m_indices_2;
-                    tree.m_primitives.Add(p);
+                    tree.m_primitives.Add(new hkcdStaticMeshTreeBasePrimitive
+                    {
+                        m_indices_0 = packedIndicesRemap[s.Indices[i * 3]],
+                        m_indices_1 = packedIndicesRemap[s.Indices[i * 3 + 1]],
+                        m_indices_2 = packedIndicesRemap[s.Indices[i * 3 + 2]],
+                        m_indices_3 = packedIndicesRemap[s.Indices[i * 3 + 2]]
+                    });
 
                     // Create datarun
                     var (cfiIndex, udIndex) = s.PrimitiveInfos[i];
-                    var run = new hkpBvCompressedMeshShapeTreeDataRun();
-                    run.m_count = 1;
-                    run.m_index = i;
-                    run.m_value =
-                        (uint) (cfiIndex | (udIndex << 8) |
-                                0); // Stores collisionFilterInfoPalette index, userDataPalette index, override flags
+                    var run = new hkpBvCompressedMeshShapeTreeDataRun
+                    {
+                        m_count = 1,
+                        m_index = i,
+                        // Stores collisionFilterInfoPalette index, userDataPalette index, override flags
+                        m_value = (uint) (cfiIndex | (udIndex << 8) | 0)
+                    };
 
                     if (i > 0)
                     {
@@ -336,11 +301,15 @@ namespace HKX2.Builders
                     dataRunCount += 1;
                 }
 
-                sec.m_primitives = new hkcdStaticMeshTreeBaseSectionPrimitives();
-                sec.m_primitives.m_data = (((uint) s.Indices.Count / 3) & 0xFF) | ((uint) primitivesbase << 8);
+                sec.m_primitives = new hkcdStaticMeshTreeBaseSectionPrimitives
+                {
+                    m_data = (((uint) s.Indices.Count / 3) & 0xFF) | ((uint) primitivesbase << 8)
+                };
 
-                sec.m_dataRuns = new hkcdStaticMeshTreeBaseSectionDataRuns();
-                sec.m_dataRuns.m_data = (dataRunCount & 0xFF) | ((uint) datarunsbase << 8);
+                sec.m_dataRuns = new hkcdStaticMeshTreeBaseSectionDataRuns
+                {
+                    m_data = (dataRunCount & 0xFF) | ((uint) datarunsbase << 8)
+                };
 
                 sec.m_nodes = s.SectionHead.BuildAxis4Tree();
 

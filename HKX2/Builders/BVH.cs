@@ -19,6 +19,51 @@ namespace HKX2.Builders
 
         public bool IsSectionHead;
 
+        public static List<BVNode> BuildBVHForMesh(Vector3[] vertices, uint[] indices, int indicesCount)
+        {
+            if (!BVHNative.BuildBVHForMesh(vertices, indices, indicesCount))
+            {
+                throw new Exception("Couldn't build BVH!");
+            }
+
+            return BuildFriendlyBVH();
+        }
+
+        public static List<BVNode> BuildBVHForDomains(Vector3[] domains, int domainCount)
+        {
+            if (!BVHNative.BuildBVHForDomains(domains, domainCount))
+            {
+                throw new Exception("Couldn't build BVH!");
+            }
+
+            return BuildFriendlyBVH();
+        }
+
+        private static List<BVNode> BuildFriendlyBVH()
+        {
+            var nodes = new NativeBVHNode[BVHNative.GetBVHSize()];
+            BVHNative.GetBVHNodes(nodes);
+
+            // Rebuild in friendlier tree form
+            var bnodes = nodes.Select(n => new BVNode
+            {
+                Min = new Vector3(n.minX, n.minY, n.minZ),
+                Max = new Vector3(n.maxX, n.maxY, n.maxZ),
+                IsLeaf = n.isLeaf,
+                PrimitiveCount = n.primitiveCount,
+                Primitive = n.firstChildOrPrimitive
+            }).ToList();
+
+            for (var i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i].isLeaf) continue;
+                bnodes[i].Left = bnodes[(int) nodes[i].firstChildOrPrimitive];
+                bnodes[i].Right = bnodes[(int) nodes[i].firstChildOrPrimitive + 1];
+            }
+
+            return bnodes;
+        }
+        
         public uint ComputePrimitiveCounts()
         {
             if (IsLeaf)

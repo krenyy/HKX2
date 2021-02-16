@@ -360,8 +360,90 @@ namespace CreateCollisionAndNavmesh
                 }
                 case "hknm2":
                 {
-                    roots.Add(hkaiNavMeshBuilder.BuildNavmesh(hkaiNavMeshBuilder.BuildParams.Default(), verts,
-                        indices.Select(u => (int) u).ToList()));
+                    var c = hkaiNavMeshBuilder.Config.Default();
+                    var navMesh = hkaiNavMeshBuilder.Build(c, verts, indices.Select(i => (int) i).ToList());
+
+                    var vbverts = navMesh.m_vertices.Select(v => new Vector3(v.X, v.Y, v.Z)).ToArray();
+                    var bindices = new ushort[NavMeshNative.GetMeshTriCount() * 3 * 2];
+                    NavMeshNative.GetMeshTris(bindices);
+
+                    // Build BVH
+                    var shortIndices = new ushort[bindices.Length / 2];
+                    for (var i = 0; i < bindices.Length / 2; i += 3)
+                    {
+                        shortIndices[i] = bindices[i * 2];
+                        shortIndices[i + 1] = bindices[i * 2 + 1];
+                        shortIndices[i + 2] = bindices[i * 2 + 2];
+                    }
+
+                    var bnodes = BVNode.BuildBVHForMesh(
+                        vbverts,
+                        shortIndices.Select(i => (uint) i).ToArray(),
+                        shortIndices.Length);
+
+                    var min = bnodes[0].Min;
+                    var max = bnodes[0].Max;
+                    var tree = new hkcdStaticAabbTree
+                    {
+                        m_treePtr = new hkcdStaticTreeDefaultTreeStorage6
+                        {
+                            m_nodes = bnodes[0].BuildAxis6Tree(),
+                            m_domain = new hkAabb
+                            {
+                                m_min = new Vector4(min.X, min.Y, min.Z, 1.0f),
+                                m_max = new Vector4(max.X, max.Y, max.Z, 1.0f)
+                            }
+                        }
+                    };
+
+                    var domain = tree.m_treePtr.m_domain;
+                    var center = (domain.m_max - domain.m_min) / 2;
+                    var costGraph = new hkaiDirectedGraphExplicitCost
+                    {
+                        m_positions = new List<Vector4>
+                        {
+                            new Vector4(center.X, center.Y, center.Z, 1.0f)
+                        },
+                        m_nodes = new List<hkaiDirectedGraphExplicitCostNode>
+                        {
+                            new hkaiDirectedGraphExplicitCostNode {m_numEdges = 0, m_startEdgeIndex = 0}
+                        },
+                        m_edges = new List<hkaiDirectedGraphExplicitCostEdge>(),
+                        m_nodeData = new List<uint>(),
+                        m_edgeData = new List<uint>(),
+                        m_nodeDataStriding = 0,
+                        m_edgeDataStriding = 0,
+                        m_streamingSets = new List<hkaiStreamingSet>()
+                    };;
+
+                    roots.Add(new hkRootLevelContainer
+                    {
+                        m_namedVariants = new List<hkRootLevelContainerNamedVariant>
+                        {
+                            new hkRootLevelContainerNamedVariant
+                            {
+                                m_className = "hkaiNavMesh",
+                                m_name = "00/000,+0000,+0000,+0000//NavMesh",
+                                m_variant = navMesh
+                            },
+                            new hkRootLevelContainerNamedVariant
+                            {
+                                m_className = "hkaiDirectedGraphExplicitCost",
+                                m_name = "00/000,+0000,+0000,+0000//ClusterGraph",
+                                m_variant = costGraph
+                            },
+                            new hkRootLevelContainerNamedVariant
+                            {
+                                m_className = "hkaiStaticTreeNavMeshQueryMediator",
+                                m_name = "00/000,+0000,+0000,+0000//QueryMediator",
+                                m_variant = new hkaiStaticTreeNavMeshQueryMediator
+                                {
+                                    m_tree = tree,
+                                    m_navMesh = navMesh
+                                }
+                            }
+                        }
+                    });
 
                     break;
                 }
