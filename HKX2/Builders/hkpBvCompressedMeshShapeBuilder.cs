@@ -147,7 +147,7 @@ namespace HKX2.Builders
                 node.Left = null;
                 node.Right = null;
                 node.IsLeaf = true;
-                node.Primitive = (uint) sectionBVHs.Count;
+                node.Primitive = (uint) (sectionBVHs.Count - 1);
             }
 
             var primitiveInfoIndices = new List<Tuple<ushort, ushort>>();
