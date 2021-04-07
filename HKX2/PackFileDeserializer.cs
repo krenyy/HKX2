@@ -6,7 +6,7 @@ namespace HKX2
 {
     public class PackFileDeserializer
     {
-        internal HKXHeader _header;
+        public HKXHeader _header;
         private HKXSection _classSection;
         private HKXSection _typeSection;
         public HKXSection _dataSection;
