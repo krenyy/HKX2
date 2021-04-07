@@ -83,6 +83,7 @@ namespace HKX2
                 WriteHKX(root1, header, ms1);
 
                 header.SectionOffset = 16;
+                header.Unk40 = 0x14; // Don't know what this is, all files with predicate have it
                 WriteHKX(root2, header, ms2);
 
                 // Copy the result to stream
