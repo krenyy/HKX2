@@ -1,3 +1,4 @@
+#include <iostream>
 #include "framework.h"
 #include "bvh/bvh.hpp"
 #include "bvh/vector.hpp"
@@ -12,11 +13,10 @@ using Bvh = bvh::Bvh<Scalar>;
 
 Bvh bbvh;
 
-DllExport [[maybe_unused]] bool BuildBVHForDomains(const float *domains, int boxCount) {
+DllExport [[maybe_unused]] bool BuildBVHForDomains(const float *domains, int domainCount) {
     // Bounding box array for processing
     std::vector<BoundingBox> bboxes;
-    bboxes.reserve(boxCount);
-    for (int i = 0; i < boxCount; i++) {
+    for (int i = 0; i < domainCount; i++) {
         bboxes.emplace_back(
                 Vector3(domains[i * 6], domains[i * 6 + 1], domains[i * 6 + 2]),
                 Vector3(domains[i * 6 + 3], domains[i * 6 + 4], domains[i * 6 + 5])
@@ -24,21 +24,17 @@ DllExport [[maybe_unused]] bool BuildBVHForDomains(const float *domains, int box
     }
 
     std::vector<Vector3> centers;
-    centers.reserve(bboxes.size());
-    for (auto &bbox : bboxes) {
+    for (const auto &bbox : bboxes) {
         centers.emplace_back(
                 bbox.center()
         );
     }
 
-    BoundingBox *pbboxes = &bboxes[0];
-    Vector3 *pcenters = &centers[0];
-
     // Build bvh
     bvh::SweepSahBuilder<Bvh> builder(bbvh);
     builder.max_leaf_size = 1;
-    auto globalBBox = bvh::compute_bounding_boxes_union(pbboxes, bboxes.size());
-    builder.build(globalBBox, pbboxes, pcenters, bboxes.size());
+    auto globalBBox = bvh::compute_bounding_boxes_union(bboxes.data(), bboxes.size());
+    builder.build(globalBBox, bboxes.data(), centers.data(), bboxes.size());
 
     for (int i = 0; i < bbvh.node_count; i++) {
         if (bbvh.nodes[i].is_leaf()) {
